@@ -1,12 +1,12 @@
 lazy val baseName     = "fedex"
 lazy val majorVersion = "0.1"
 
-lazy val sttpVersion  = "4.0.0-M24"
+lazy val sttpVersion  = "4.0.0-M25"
 lazy val circeVersion = "0.14.10"
 
 lazy val commonSettings = Seq(
   organization := "com.alexdupre",
-  scalaVersion := "3.3.4",
+  scalaVersion := "3.3.5",
   libraryDependencies ++= Seq(
     "com.softwaremill.sttp.client4" %% "core"         % sttpVersion,
     "com.softwaremill.sttp.client4" %% "circe"        % sttpVersion,
