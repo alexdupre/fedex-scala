@@ -1,7 +1,7 @@
 lazy val baseName     = "fedex"
 lazy val majorVersion = "0.1"
 
-lazy val sttpVersion  = "4.0.0-M25"
+lazy val sttpVersion  = "4.0.0-RC1"
 lazy val circeVersion = "0.14.10"
 
 lazy val commonSettings = Seq(
@@ -39,4 +39,5 @@ def fedexProject(subName: String, minor: Int) = Project(subName, file("modules")
 lazy val ship  = fedexProject("ship", 0)
 lazy val track = fedexProject("track", 0)
 
+publishTo       := sonatypePublishToBundle.value
 publishArtifact := false
