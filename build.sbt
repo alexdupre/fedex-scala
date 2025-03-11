@@ -1,5 +1,5 @@
 lazy val baseName     = "fedex"
-lazy val majorVersion = "0.1"
+lazy val majorVersion = "0.2"
 
 version         := majorVersion
 publishArtifact := false
