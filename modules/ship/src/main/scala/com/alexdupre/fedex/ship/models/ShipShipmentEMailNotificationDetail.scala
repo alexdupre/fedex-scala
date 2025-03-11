@@ -25,10 +25,12 @@ object ShipShipmentEMailNotificationDetail {
   enum AggregationType {
     case PER_PACKAGE
     case PER_SHIPMENT
+    case UNKNOWN_DEFAULT
   }
   object AggregationType {
     given Encoder[AggregationType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[AggregationType] = Decoder.decodeString.emapTry(s => scala.util.Try(AggregationType.valueOf(s)))
+    given Decoder[AggregationType] =
+      Decoder.decodeString.map(s => scala.util.Try(AggregationType.valueOf(s)).getOrElse(AggregationType.UNKNOWN_DEFAULT))
   }
   given Encoder[ShipShipmentEMailNotificationDetail] = new Encoder.AsObject[ShipShipmentEMailNotificationDetail] {
     final def encodeObject(o: ShipShipmentEMailNotificationDetail): JsonObject = {

@@ -16,10 +16,12 @@ object StandaloneBatteryDetails {
   enum BatteryMaterialType {
     case LITHIUM_METAL
     case LITHIUM_ION
+    case UNKNOWN_DEFAULT
   }
   object BatteryMaterialType {
     given Encoder[BatteryMaterialType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[BatteryMaterialType] = Decoder.decodeString.emapTry(s => scala.util.Try(BatteryMaterialType.valueOf(s)))
+    given Decoder[BatteryMaterialType] =
+      Decoder.decodeString.map(s => scala.util.Try(BatteryMaterialType.valueOf(s)).getOrElse(BatteryMaterialType.UNKNOWN_DEFAULT))
   }
   given Encoder[StandaloneBatteryDetails] = new Encoder.AsObject[StandaloneBatteryDetails] {
     final def encodeObject(o: StandaloneBatteryDetails): JsonObject = {

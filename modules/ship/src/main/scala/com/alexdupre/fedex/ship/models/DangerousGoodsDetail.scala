@@ -30,19 +30,22 @@ object DangerousGoodsDetail {
     case DOT
     case IATA
     case ORMD
+    case UNKNOWN_DEFAULT
   }
   object Regulation {
     given Encoder[Regulation] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Regulation] = Decoder.decodeString.emapTry(s => scala.util.Try(Regulation.valueOf(s)))
+    given Decoder[Regulation] = Decoder.decodeString.map(s => scala.util.Try(Regulation.valueOf(s)).getOrElse(Regulation.UNKNOWN_DEFAULT))
   }
 
   enum Accessibility {
     case ACCESSIBLE
     case INACCESSIBLE
+    case UNKNOWN_DEFAULT
   }
   object Accessibility {
     given Encoder[Accessibility] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Accessibility] = Decoder.decodeString.emapTry(s => scala.util.Try(Accessibility.valueOf(s)))
+    given Decoder[Accessibility] =
+      Decoder.decodeString.map(s => scala.util.Try(Accessibility.valueOf(s)).getOrElse(Accessibility.UNKNOWN_DEFAULT))
   }
 
   enum Options {
@@ -52,10 +55,11 @@ object DangerousGoodsDetail {
     case REPORTABLE_QUANTITIES
     case SMALL_QUANTITY_EXCEPTION
     case LIMITED_QUANTITIES_COMMODITIES
+    case UNKNOWN_DEFAULT
   }
   object Options {
     given Encoder[Options] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Options] = Decoder.decodeString.emapTry(s => scala.util.Try(Options.valueOf(s)))
+    given Decoder[Options] = Decoder.decodeString.map(s => scala.util.Try(Options.valueOf(s)).getOrElse(Options.UNKNOWN_DEFAULT))
   }
   given Encoder[DangerousGoodsDetail] = new Encoder.AsObject[DangerousGoodsDetail] {
     final def encodeObject(o: DangerousGoodsDetail): JsonObject = {

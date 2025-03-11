@@ -19,10 +19,12 @@ object Payment {
     case RECIPIENT
     case THIRD_PARTY
     case COLLECT
+    case UNKNOWN_DEFAULT
   }
   object PaymentType {
     given Encoder[PaymentType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[PaymentType] = Decoder.decodeString.emapTry(s => scala.util.Try(PaymentType.valueOf(s)))
+    given Decoder[PaymentType] =
+      Decoder.decodeString.map(s => scala.util.Try(PaymentType.valueOf(s)).getOrElse(PaymentType.UNKNOWN_DEFAULT))
   }
   given Encoder[Payment] = new Encoder.AsObject[Payment] {
     final def encodeObject(o: Payment): JsonObject = {

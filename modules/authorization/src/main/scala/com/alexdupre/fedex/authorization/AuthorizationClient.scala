@@ -1,6 +1,6 @@
 package com.alexdupre.fedex.authorization
 
-import sttp.client4.Backend
+import sttp.client4.{Backend, Request}
 import sttp.monad.MonadError
 import sttp.monad.syntax.*
 
@@ -14,6 +14,10 @@ class AuthorizationClient[F[_]](baseUrl: String = "https://apis-sandbox.fedex.co
   private val api = new AuthorizationAPI(baseUrl)
 
   private given monad: MonadError[F] = backend.monad
+
+  private def send[T](request: Request[Either[AuthorizationException, T]]): F[T] = {
+    backend.send(request).flatMap(_.body.fold(monad.error, monad.unit))
+  }
 
   /** API Authorization Use this endpoint to request the OAuth token (bearer token) to authorize your application to access FedEx resources.
     * You can pass this bearer token in your subsequent individual FedEx API endpoint requests.<br/><i>Note: FedEx APIs do not support
@@ -45,9 +49,6 @@ class AuthorizationClient[F[_]](baseUrl: String = "https://apis-sandbox.fedex.co
       childKey: Option[String] = None,
       childSecret: Option[String] = None
   ): F[models.Response] = {
-    api
-      .apiAuthorization(grantType, clientId, clientSecret, childKey, childSecret)
-      .send(backend)
-      .flatMap(_.body.fold(monad.error, monad.unit))
+    send(api.apiAuthorization(grantType, clientId, clientSecret, childKey, childSecret))
   }
 }

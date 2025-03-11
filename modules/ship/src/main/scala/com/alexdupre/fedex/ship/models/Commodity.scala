@@ -67,10 +67,11 @@ object Commodity {
   enum Purpose {
     case BUSINESS
     case CONSUMER
+    case UNKNOWN_DEFAULT
   }
   object Purpose {
     given Encoder[Purpose] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Purpose] = Decoder.decodeString.emapTry(s => scala.util.Try(Purpose.valueOf(s)))
+    given Decoder[Purpose] = Decoder.decodeString.map(s => scala.util.Try(Purpose.valueOf(s)).getOrElse(Purpose.UNKNOWN_DEFAULT))
   }
   given Encoder[Commodity] = new Encoder.AsObject[Commodity] {
     final def encodeObject(o: Commodity): JsonObject = {

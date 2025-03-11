@@ -20,10 +20,12 @@ object ReturnEmailDetail {
   enum AllowedSpecialService {
     case SATURDAY_DELIVERY
     case SATURDAY_PICKUP
+    case UNKNOWN_DEFAULT
   }
   object AllowedSpecialService {
     given Encoder[AllowedSpecialService] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[AllowedSpecialService] = Decoder.decodeString.emapTry(s => scala.util.Try(AllowedSpecialService.valueOf(s)))
+    given Decoder[AllowedSpecialService] =
+      Decoder.decodeString.map(s => scala.util.Try(AllowedSpecialService.valueOf(s)).getOrElse(AllowedSpecialService.UNKNOWN_DEFAULT))
   }
   given Encoder[ReturnEmailDetail] = new Encoder.AsObject[ReturnEmailDetail] {
     final def encodeObject(o: ReturnEmailDetail): JsonObject = {

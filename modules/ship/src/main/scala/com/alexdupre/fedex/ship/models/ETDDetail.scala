@@ -35,18 +35,21 @@ object ETDDetail {
     case PRO_FORMA_INVOICE
     case RETURN_INSTRUCTIONS
     case USMCA_COMMERCIAL_INVOICE_CERTIFICATION_OF_ORIGIN
+    case UNKNOWN_DEFAULT
   }
   object RequestedDocumentTypes {
     given Encoder[RequestedDocumentTypes] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[RequestedDocumentTypes] = Decoder.decodeString.emapTry(s => scala.util.Try(RequestedDocumentTypes.valueOf(s)))
+    given Decoder[RequestedDocumentTypes] =
+      Decoder.decodeString.map(s => scala.util.Try(RequestedDocumentTypes.valueOf(s)).getOrElse(RequestedDocumentTypes.UNKNOWN_DEFAULT))
   }
 
   enum Attributes {
     case POST_SHIPMENT_UPLOAD_REQUESTED
+    case UNKNOWN_DEFAULT
   }
   object Attributes {
     given Encoder[Attributes] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Attributes] = Decoder.decodeString.emapTry(s => scala.util.Try(Attributes.valueOf(s)))
+    given Decoder[Attributes] = Decoder.decodeString.map(s => scala.util.Try(Attributes.valueOf(s)).getOrElse(Attributes.UNKNOWN_DEFAULT))
   }
   given Encoder[ETDDetail] = new Encoder.AsObject[ETDDetail] {
     final def encodeObject(o: ETDDetail): JsonObject = {

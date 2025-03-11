@@ -25,10 +25,11 @@ object DeliveryOptionElgibilityDetails {
     case RESCHEDULE
     case RETURN_TO_SHIPPER
     case SUPPLEMENT_ADDRESS
+    case UNKNOWN_DEFAULT
   }
   object SpecOption {
     given Encoder[SpecOption] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[SpecOption] = Decoder.decodeString.emapTry(s => scala.util.Try(SpecOption.valueOf(s)))
+    given Decoder[SpecOption] = Decoder.decodeString.map(s => scala.util.Try(SpecOption.valueOf(s)).getOrElse(SpecOption.UNKNOWN_DEFAULT))
   }
   given Encoder[DeliveryOptionElgibilityDetails] = new Encoder.AsObject[DeliveryOptionElgibilityDetails] {
     final def encodeObject(o: DeliveryOptionElgibilityDetails): JsonObject = {

@@ -19,10 +19,11 @@ object Distance {
   enum Units {
     case KM
     case MI
+    case UNKNOWN_DEFAULT
   }
   object Units {
     given Encoder[Units] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Units] = Decoder.decodeString.emapTry(s => scala.util.Try(Units.valueOf(s)))
+    given Decoder[Units] = Decoder.decodeString.map(s => scala.util.Try(Units.valueOf(s)).getOrElse(Units.UNKNOWN_DEFAULT))
   }
   given Encoder[Distance] = new Encoder.AsObject[Distance] {
     final def encodeObject(o: Distance): JsonObject = {

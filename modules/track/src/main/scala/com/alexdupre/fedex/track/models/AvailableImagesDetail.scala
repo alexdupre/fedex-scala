@@ -19,19 +19,21 @@ object AvailableImagesDetail {
   enum Size {
     case SMALL
     case LARGE
+    case UNKNOWN_DEFAULT
   }
   object Size {
     given Encoder[Size] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Size] = Decoder.decodeString.emapTry(s => scala.util.Try(Size.valueOf(s)))
+    given Decoder[Size] = Decoder.decodeString.map(s => scala.util.Try(Size.valueOf(s)).getOrElse(Size.UNKNOWN_DEFAULT))
   }
 
   enum Type {
     case SIGNATURE_PROOF_OF_DELIVERY
     case BILL_OF_LADING
+    case UNKNOWN_DEFAULT
   }
   object Type {
     given Encoder[Type] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Type] = Decoder.decodeString.emapTry(s => scala.util.Try(Type.valueOf(s)))
+    given Decoder[Type] = Decoder.decodeString.map(s => scala.util.Try(Type.valueOf(s)).getOrElse(Type.UNKNOWN_DEFAULT))
   }
   given Encoder[AvailableImagesDetail] = new Encoder.AsObject[AvailableImagesDetail] {
     final def encodeObject(o: AvailableImagesDetail): JsonObject = {

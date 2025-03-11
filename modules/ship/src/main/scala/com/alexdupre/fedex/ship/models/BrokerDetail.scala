@@ -18,10 +18,11 @@ case class BrokerDetail(
 object BrokerDetail {
   enum Type {
     case IMPORT
+    case UNKNOWN_DEFAULT
   }
   object Type {
     given Encoder[Type] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Type] = Decoder.decodeString.emapTry(s => scala.util.Try(Type.valueOf(s)))
+    given Decoder[Type] = Decoder.decodeString.map(s => scala.util.Try(Type.valueOf(s)).getOrElse(Type.UNKNOWN_DEFAULT))
   }
   given Encoder[BrokerDetail] = new Encoder.AsObject[BrokerDetail] {
     final def encodeObject(o: BrokerDetail): JsonObject = {

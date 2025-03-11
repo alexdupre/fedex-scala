@@ -21,10 +21,12 @@ object HazardousCommodityOptionDetail {
     case APPEND
     case OVERRIDE
     case STANDARD
+    case UNKNOWN_DEFAULT
   }
   object LabelTextOption {
     given Encoder[LabelTextOption] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[LabelTextOption] = Decoder.decodeString.emapTry(s => scala.util.Try(LabelTextOption.valueOf(s)))
+    given Decoder[LabelTextOption] =
+      Decoder.decodeString.map(s => scala.util.Try(LabelTextOption.valueOf(s)).getOrElse(LabelTextOption.UNKNOWN_DEFAULT))
   }
   given Encoder[HazardousCommodityOptionDetail] = new Encoder.AsObject[HazardousCommodityOptionDetail] {
     final def encodeObject(o: HazardousCommodityOptionDetail): JsonObject = {

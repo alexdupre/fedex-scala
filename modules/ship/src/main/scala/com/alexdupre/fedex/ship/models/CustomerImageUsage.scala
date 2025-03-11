@@ -22,10 +22,12 @@ object CustomerImageUsage {
   enum ProvidedImageType {
     case LETTER_HEAD
     case SIGNATURE
+    case UNKNOWN_DEFAULT
   }
   object ProvidedImageType {
     given Encoder[ProvidedImageType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[ProvidedImageType] = Decoder.decodeString.emapTry(s => scala.util.Try(ProvidedImageType.valueOf(s)))
+    given Decoder[ProvidedImageType] =
+      Decoder.decodeString.map(s => scala.util.Try(ProvidedImageType.valueOf(s)).getOrElse(ProvidedImageType.UNKNOWN_DEFAULT))
   }
 
   enum Id {
@@ -34,19 +36,21 @@ object CustomerImageUsage {
     case IMAGE_3
     case IMAGE_4
     case IMAGE_5
+    case UNKNOWN_DEFAULT
   }
   object Id {
     given Encoder[Id] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Id] = Decoder.decodeString.emapTry(s => scala.util.Try(Id.valueOf(s)))
+    given Decoder[Id] = Decoder.decodeString.map(s => scala.util.Try(Id.valueOf(s)).getOrElse(Id.UNKNOWN_DEFAULT))
   }
 
   enum Type {
     case SIGNATURE
     case LETTER_HEAD
+    case UNKNOWN_DEFAULT
   }
   object Type {
     given Encoder[Type] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Type] = Decoder.decodeString.emapTry(s => scala.util.Try(Type.valueOf(s)))
+    given Decoder[Type] = Decoder.decodeString.map(s => scala.util.Try(Type.valueOf(s)).getOrElse(Type.UNKNOWN_DEFAULT))
   }
   given Encoder[CustomerImageUsage] = new Encoder.AsObject[CustomerImageUsage] {
     final def encodeObject(o: CustomerImageUsage): JsonObject = {

@@ -75,20 +75,23 @@ object RequestedShipmentVerify {
     case ACCOUNT
     case INCENTIVE
     case RETAIL
+    case UNKNOWN_DEFAULT
   }
   object RateRequestType {
     given Encoder[RateRequestType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[RateRequestType] = Decoder.decodeString.emapTry(s => scala.util.Try(RateRequestType.valueOf(s)))
+    given Decoder[RateRequestType] =
+      Decoder.decodeString.map(s => scala.util.Try(RateRequestType.valueOf(s)).getOrElse(RateRequestType.UNKNOWN_DEFAULT))
   }
 
   enum PickupType {
     case `CONTACT_FEDEX TO_SCHEDULE`
     case DROPOFF_AT_FEDEX_LOCATION
     case USE_SCHEDULED_PICKUP
+    case UNKNOWN_DEFAULT
   }
   object PickupType {
     given Encoder[PickupType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[PickupType] = Decoder.decodeString.emapTry(s => scala.util.Try(PickupType.valueOf(s)))
+    given Decoder[PickupType] = Decoder.decodeString.map(s => scala.util.Try(PickupType.valueOf(s)).getOrElse(PickupType.UNKNOWN_DEFAULT))
   }
   given Encoder[RequestedShipmentVerify] = new Encoder.AsObject[RequestedShipmentVerify] {
     final def encodeObject(o: RequestedShipmentVerify): JsonObject = {

@@ -55,19 +55,23 @@ object CustomsClearanceDetail {
     case USMCA
     case NOT_APPLICABLE_FOR_LOW_VALUE_CUSTOMS_EXCEPTIONS
     case NOT_IN_FREE_CIRCULATION
+    case UNKNOWN_DEFAULT
   }
   object RegulatoryControls {
     given Encoder[RegulatoryControls] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[RegulatoryControls] = Decoder.decodeString.emapTry(s => scala.util.Try(RegulatoryControls.valueOf(s)))
+    given Decoder[RegulatoryControls] =
+      Decoder.decodeString.map(s => scala.util.Try(RegulatoryControls.valueOf(s)).getOrElse(RegulatoryControls.UNKNOWN_DEFAULT))
   }
 
   enum FreightOnValue {
     case CARRIER_RISK
     case OWN_RISK
+    case UNKNOWN_DEFAULT
   }
   object FreightOnValue {
     given Encoder[FreightOnValue] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[FreightOnValue] = Decoder.decodeString.emapTry(s => scala.util.Try(FreightOnValue.valueOf(s)))
+    given Decoder[FreightOnValue] =
+      Decoder.decodeString.map(s => scala.util.Try(FreightOnValue.valueOf(s)).getOrElse(FreightOnValue.UNKNOWN_DEFAULT))
   }
   given Encoder[CustomsClearanceDetail] = new Encoder.AsObject[CustomsClearanceDetail] {
     final def encodeObject(o: CustomsClearanceDetail): JsonObject = {

@@ -23,10 +23,11 @@ object PieceCountDetail {
   enum Type {
     case DESTINATION
     case ORIGIN
+    case UNKNOWN_DEFAULT
   }
   object Type {
     given Encoder[Type] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Type] = Decoder.decodeString.emapTry(s => scala.util.Try(Type.valueOf(s)))
+    given Decoder[Type] = Decoder.decodeString.map(s => scala.util.Try(Type.valueOf(s)).getOrElse(Type.UNKNOWN_DEFAULT))
   }
   given Encoder[PieceCountDetail] = new Encoder.AsObject[PieceCountDetail] {
     final def encodeObject(o: PieceCountDetail): JsonObject = {

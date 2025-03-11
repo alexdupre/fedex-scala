@@ -30,10 +30,12 @@ object FullSchemaShip {
     case NONE
     case LABELS_AND_DOCS
     case LABELS_ONLY
+    case UNKNOWN_DEFAULT
   }
   object MergeLabelDocOption {
     given Encoder[MergeLabelDocOption] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[MergeLabelDocOption] = Decoder.decodeString.emapTry(s => scala.util.Try(MergeLabelDocOption.valueOf(s)))
+    given Decoder[MergeLabelDocOption] =
+      Decoder.decodeString.map(s => scala.util.Try(MergeLabelDocOption.valueOf(s)).getOrElse(MergeLabelDocOption.UNKNOWN_DEFAULT))
   }
   given Encoder[FullSchemaShip] = new Encoder.AsObject[FullSchemaShip] {
     final def encodeObject(o: FullSchemaShip): JsonObject = {

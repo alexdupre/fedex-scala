@@ -24,10 +24,12 @@ object ShippingDocumentEmailRecipient {
     case THIRD_PARTY
     case OTHER1
     case OTHER2
+    case UNKNOWN_DEFAULT
   }
   object RecipientType {
     given Encoder[RecipientType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[RecipientType] = Decoder.decodeString.emapTry(s => scala.util.Try(RecipientType.valueOf(s)))
+    given Decoder[RecipientType] =
+      Decoder.decodeString.map(s => scala.util.Try(RecipientType.valueOf(s)).getOrElse(RecipientType.UNKNOWN_DEFAULT))
   }
   given Encoder[ShippingDocumentEmailRecipient] = new Encoder.AsObject[ShippingDocumentEmailRecipient] {
     final def encodeObject(o: ShippingDocumentEmailRecipient): JsonObject = {

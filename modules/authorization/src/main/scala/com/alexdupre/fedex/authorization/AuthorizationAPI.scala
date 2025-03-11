@@ -20,6 +20,15 @@ class AuthorizationAPI(baseUrl: String = "https://apis-sandbox.fedex.com") {
     }
   }
 
+  private def mapAPIError[T: Decoder](description: String, ex: ResponseException.UnexpectedStatusCode[_]) = {
+    parse(ex.body.toString)
+      .flatMap(_.as[T])
+      .fold(
+        e => AuthorizationDeserializationException("Deserialization Error: " + e.getMessage, ex.body.toString, ex),
+        o => AuthorizationAPIException(description, o, ex)
+      )
+  }
+
   /** API Authorization Use this endpoint to request the OAuth token (bearer token) to authorize your application to access FedEx resources.
     * You can pass this bearer token in your subsequent individual FedEx API endpoint requests.<br/><i>Note: FedEx APIs do not support
     * Cross-Origin Resource Sharing (CORS) mechanism.</i>
@@ -49,7 +58,7 @@ class AuthorizationAPI(baseUrl: String = "https://apis-sandbox.fedex.com") {
       clientSecret: String,
       childKey: Option[String] = None,
       childSecret: Option[String] = None
-  ): Request[Either[AuthorizationAPIException, models.Response]] = {
+  ): Request[Either[AuthorizationException, models.Response]] = {
     val __body = Map(
       "grant_type"    -> grantType,
       "client_id"     -> clientId,
@@ -63,18 +72,14 @@ class AuthorizationAPI(baseUrl: String = "https://apis-sandbox.fedex.com") {
       .headers(cleanAndStringify(__headers))
       .body(cleanAndStringify(__body))
       .response(asJson[models.Response].mapLeft {
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 401 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO])
-            .fold(e => throw e, o => AuthorizationAPIException("Unauthorized", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 500 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO])
-            .fold(e => throw e, o => AuthorizationAPIException("Failure", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 503 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO])
-            .fold(e => throw e, o => AuthorizationAPIException("Service Unavailable", o, ex))
+        case ex @ ResponseException.DeserializationException(body, cause, response) =>
+          AuthorizationDeserializationException("Deserialization Error: " + ex.getMessage, body, ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 401 =>
+          mapAPIError[models.ErrorResponseVO]("Unauthorized", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 500 =>
+          mapAPIError[models.ErrorResponseVO]("Failure", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 503 =>
+          mapAPIError[models.ErrorResponseVO]("Service Unavailable", ex)
         case ex: Throwable => throw ex
         case unexpected    => sys.error("Unexpected error: " + unexpected)
       })

@@ -28,28 +28,33 @@ object CODTransportationChargesDetail {
     case ACTUAL
     case CURRENT
     case CUSTOM
+    case UNKNOWN_DEFAULT
   }
   object RateType {
     given Encoder[RateType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[RateType] = Decoder.decodeString.emapTry(s => scala.util.Try(RateType.valueOf(s)))
+    given Decoder[RateType] = Decoder.decodeString.map(s => scala.util.Try(RateType.valueOf(s)).getOrElse(RateType.UNKNOWN_DEFAULT))
   }
 
   enum RateLevelType {
     case BUNDLED_RATE
     case INDIVIDUAL_PACKAGE_RATE
+    case UNKNOWN_DEFAULT
   }
   object RateLevelType {
     given Encoder[RateLevelType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[RateLevelType] = Decoder.decodeString.emapTry(s => scala.util.Try(RateLevelType.valueOf(s)))
+    given Decoder[RateLevelType] =
+      Decoder.decodeString.map(s => scala.util.Try(RateLevelType.valueOf(s)).getOrElse(RateLevelType.UNKNOWN_DEFAULT))
   }
 
   enum ChargeLevelType {
     case CURRENT_PACKAGE
     case SUM_OF_PACKAGES
+    case UNKNOWN_DEFAULT
   }
   object ChargeLevelType {
     given Encoder[ChargeLevelType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[ChargeLevelType] = Decoder.decodeString.emapTry(s => scala.util.Try(ChargeLevelType.valueOf(s)))
+    given Decoder[ChargeLevelType] =
+      Decoder.decodeString.map(s => scala.util.Try(ChargeLevelType.valueOf(s)).getOrElse(ChargeLevelType.UNKNOWN_DEFAULT))
   }
 
   enum ChargeType {
@@ -57,10 +62,11 @@ object CODTransportationChargesDetail {
     case NET_CHARGE
     case NET_FREIGHT
     case TOTAL_CUSTOMER_CHARGE
+    case UNKNOWN_DEFAULT
   }
   object ChargeType {
     given Encoder[ChargeType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[ChargeType] = Decoder.decodeString.emapTry(s => scala.util.Try(ChargeType.valueOf(s)))
+    given Decoder[ChargeType] = Decoder.decodeString.map(s => scala.util.Try(ChargeType.valueOf(s)).getOrElse(ChargeType.UNKNOWN_DEFAULT))
   }
   given Encoder[CODTransportationChargesDetail] = new Encoder.AsObject[CODTransportationChargesDetail] {
     final def encodeObject(o: CODTransportationChargesDetail): JsonObject = {

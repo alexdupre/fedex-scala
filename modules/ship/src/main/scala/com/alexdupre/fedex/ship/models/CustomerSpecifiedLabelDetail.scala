@@ -31,10 +31,11 @@ object CustomerSpecifiedLabelDetail {
     case TERMS_AND_CONDITIONS
     case TOTAL_WEIGHT
     case TRANSPORTATION_CHARGES_PAYOR_ACCOUNT_NUMBER
+    case UNKNOWN_DEFAULT
   }
   object MaskedData {
     given Encoder[MaskedData] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[MaskedData] = Decoder.decodeString.emapTry(s => scala.util.Try(MaskedData.valueOf(s)))
+    given Decoder[MaskedData] = Decoder.decodeString.map(s => scala.util.Try(MaskedData.valueOf(s)).getOrElse(MaskedData.UNKNOWN_DEFAULT))
   }
   given Encoder[CustomerSpecifiedLabelDetail] = new Encoder.AsObject[CustomerSpecifiedLabelDetail] {
     final def encodeObject(o: CustomerSpecifiedLabelDetail): JsonObject = {

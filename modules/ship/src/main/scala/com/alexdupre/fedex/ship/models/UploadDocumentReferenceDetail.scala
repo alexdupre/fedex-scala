@@ -34,10 +34,12 @@ object UploadDocumentReferenceDetail {
     case OTHER
     case PRO_FORMA_INVOICE
     case USMCA_COMMERCIAL_INVOICE_CERTIFICATION_OF_ORIGIN
+    case UNKNOWN_DEFAULT
   }
   object DocumentType {
     given Encoder[DocumentType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[DocumentType] = Decoder.decodeString.emapTry(s => scala.util.Try(DocumentType.valueOf(s)))
+    given Decoder[DocumentType] =
+      Decoder.decodeString.map(s => scala.util.Try(DocumentType.valueOf(s)).getOrElse(DocumentType.UNKNOWN_DEFAULT))
   }
   given Encoder[UploadDocumentReferenceDetail] = new Encoder.AsObject[UploadDocumentReferenceDetail] {
     final def encodeObject(o: UploadDocumentReferenceDetail): JsonObject = {

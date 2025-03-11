@@ -31,29 +31,35 @@ object UsmcaCommercialInvoiceCertificationOfOriginDetail {
     case EXPORTER
     case IMPORTER
     case PRODUCER
+    case UNKNOWN_DEFAULT
   }
   object CertifierSpecification {
     given Encoder[CertifierSpecification] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[CertifierSpecification] = Decoder.decodeString.emapTry(s => scala.util.Try(CertifierSpecification.valueOf(s)))
+    given Decoder[CertifierSpecification] =
+      Decoder.decodeString.map(s => scala.util.Try(CertifierSpecification.valueOf(s)).getOrElse(CertifierSpecification.UNKNOWN_DEFAULT))
   }
 
   enum ProducerSpecification {
     case AVAILABLE_UPON_REQUEST
     case VARIOUS
     case SAME_AS_EXPORTER
+    case UNKNOWN_DEFAULT
   }
   object ProducerSpecification {
     given Encoder[ProducerSpecification] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[ProducerSpecification] = Decoder.decodeString.emapTry(s => scala.util.Try(ProducerSpecification.valueOf(s)))
+    given Decoder[ProducerSpecification] =
+      Decoder.decodeString.map(s => scala.util.Try(ProducerSpecification.valueOf(s)).getOrElse(ProducerSpecification.UNKNOWN_DEFAULT))
   }
 
   enum ImporterSpecification {
     case UNKNOWN
     case VARIOUS
+    case UNKNOWN_DEFAULT
   }
   object ImporterSpecification {
     given Encoder[ImporterSpecification] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[ImporterSpecification] = Decoder.decodeString.emapTry(s => scala.util.Try(ImporterSpecification.valueOf(s)))
+    given Decoder[ImporterSpecification] =
+      Decoder.decodeString.map(s => scala.util.Try(ImporterSpecification.valueOf(s)).getOrElse(ImporterSpecification.UNKNOWN_DEFAULT))
   }
   given Encoder[UsmcaCommercialInvoiceCertificationOfOriginDetail] =
     new Encoder.AsObject[UsmcaCommercialInvoiceCertificationOfOriginDetail] {

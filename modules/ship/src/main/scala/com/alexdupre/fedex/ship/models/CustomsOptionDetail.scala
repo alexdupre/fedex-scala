@@ -33,10 +33,11 @@ object CustomsOptionDetail {
     case REJECTED
     case REPLACEMENT
     case TRIAL
+    case UNKNOWN_DEFAULT
   }
   object Type {
     given Encoder[Type] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Type] = Decoder.decodeString.emapTry(s => scala.util.Try(Type.valueOf(s)))
+    given Decoder[Type] = Decoder.decodeString.map(s => scala.util.Try(Type.valueOf(s)).getOrElse(Type.UNKNOWN_DEFAULT))
   }
   given Encoder[CustomsOptionDetail] = new Encoder.AsObject[CustomsOptionDetail] {
     final def encodeObject(o: CustomsOptionDetail): JsonObject = {

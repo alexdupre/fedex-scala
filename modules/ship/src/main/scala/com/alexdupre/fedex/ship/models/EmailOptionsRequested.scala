@@ -17,10 +17,11 @@ object EmailOptionsRequested {
     case PRODUCE_PAPERLESS_SHIPPING_FORMAT
     case SUPPRESS_ADDITIONAL_LANGUAGES
     case SUPPRESS_ACCESS_EMAILS
+    case UNKNOWN_DEFAULT
   }
   object Options {
     given Encoder[Options] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Options] = Decoder.decodeString.emapTry(s => scala.util.Try(Options.valueOf(s)))
+    given Decoder[Options] = Decoder.decodeString.map(s => scala.util.Try(Options.valueOf(s)).getOrElse(Options.UNKNOWN_DEFAULT))
   }
   given Encoder[EmailOptionsRequested] = new Encoder.AsObject[EmailOptionsRequested] {
     final def encodeObject(o: EmailOptionsRequested): JsonObject = {

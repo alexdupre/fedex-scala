@@ -28,10 +28,12 @@ object FullSchemaMultiplePieceShipment {
     case OUTBOUND_LINK_TO_RETURN
     case STANDARD_MPS
     case GROUP_MPS
+    case UNKNOWN_DEFAULT
   }
   object AssociatedType {
     given Encoder[AssociatedType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[AssociatedType] = Decoder.decodeString.emapTry(s => scala.util.Try(AssociatedType.valueOf(s)))
+    given Decoder[AssociatedType] =
+      Decoder.decodeString.map(s => scala.util.Try(AssociatedType.valueOf(s)).getOrElse(AssociatedType.UNKNOWN_DEFAULT))
   }
   given Encoder[FullSchemaMultiplePieceShipment] = new Encoder.AsObject[FullSchemaMultiplePieceShipment] {
     final def encodeObject(o: FullSchemaMultiplePieceShipment): JsonObject = {

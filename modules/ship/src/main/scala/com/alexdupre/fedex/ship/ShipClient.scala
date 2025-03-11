@@ -1,6 +1,6 @@
 package com.alexdupre.fedex.ship
 
-import sttp.client4.Backend
+import sttp.client4.{Backend, Request}
 import sttp.monad.MonadError
 import sttp.monad.syntax.*
 
@@ -14,6 +14,10 @@ class ShipClient[F[_]](baseUrl: String = "https://apis-sandbox.fedex.com")(using
   private val api = new ShipAPI(baseUrl)
 
   private given monad: MonadError[F] = backend.monad
+
+  private def send[T](request: Request[Either[ShipException, T]]): F[T] = {
+    backend.send(request).flatMap(_.body.fold(monad.error, monad.unit))
+  }
 
   /** Create Shipment This endpoint helps you to create shipment requests thereby validating all the shipping input information and either
     * generates the labels (if the responses is synchronous) or a job ID if transaction is processed using asynchronous method.<br><i>Note:
@@ -36,10 +40,7 @@ class ShipClient[F[_]](baseUrl: String = "https://apis-sandbox.fedex.com")(using
       xCustomerTransactionId: Option[String] = None,
       xLocale: Option[String] = None
   ): F[models.SHPCResponseVOShipShipment] = {
-    api
-      .createShipment(authorization, body, xCustomerTransactionId, xLocale)
-      .send(backend)
-      .flatMap(_.body.fold(monad.error, monad.unit))
+    send(api.createShipment(authorization, body, xCustomerTransactionId, xLocale))
   }
 
   /** Cancel Shipment Use this endpoint to cancel FedEx Express and Ground shipments that have not already been tendered to FedEx. This
@@ -63,10 +64,7 @@ class ShipClient[F[_]](baseUrl: String = "https://apis-sandbox.fedex.com")(using
       xCustomerTransactionId: Option[String] = None,
       xLocale: Option[String] = None
   ): F[models.SHPCResponseVOCancelShipment] = {
-    api
-      .cancelShipment(authorization, body, xCustomerTransactionId, xLocale)
-      .send(backend)
-      .flatMap(_.body.fold(monad.error, monad.unit))
+    send(api.cancelShipment(authorization, body, xCustomerTransactionId, xLocale))
   }
 
   /** Retrieve Async Ship This endpoint helps you to process confirmed shipments asynchronously (above 40 packages) and produce results
@@ -86,10 +84,7 @@ class ShipClient[F[_]](baseUrl: String = "https://apis-sandbox.fedex.com")(using
       xCustomerTransactionId: Option[String] = None,
       xLocale: Option[String] = None
   ): F[models.SHPCResponseVOGetOpenShipmentResults] = {
-    api
-      .retrieveAsyncShip(authorization, body, xCustomerTransactionId, xLocale)
-      .send(backend)
-      .flatMap(_.body.fold(monad.error, monad.unit))
+    send(api.retrieveAsyncShip(authorization, body, xCustomerTransactionId, xLocale))
   }
 
   /** Validate Shipment Use this endpoint to verify the accuracy of a shipment request prior to actually submitting shipment request. This
@@ -117,10 +112,7 @@ class ShipClient[F[_]](baseUrl: String = "https://apis-sandbox.fedex.com")(using
       xCustomerTransactionId: Option[String] = None,
       xLocale: Option[String] = None
   ): F[models.SHPCResponseVOValidate] = {
-    api
-      .validateShipment(authorization, body, xCustomerTransactionId, xLocale)
-      .send(backend)
-      .flatMap(_.body.fold(monad.error, monad.unit))
+    send(api.validateShipment(authorization, body, xCustomerTransactionId, xLocale))
   }
 
   /** Create Tag FedEx creates and delivers a returnnn shipping label to your customer and collects the item for return. Your customer needs
@@ -142,10 +134,7 @@ class ShipClient[F[_]](baseUrl: String = "https://apis-sandbox.fedex.com")(using
       xCustomerTransactionId: Option[String] = None,
       xLocale: Option[String] = None
   ): F[models.SHPCResponseVOCreateTag] = {
-    api
-      .createTag(authorization, body, xCustomerTransactionId, xLocale)
-      .send(backend)
-      .flatMap(_.body.fold(monad.error, monad.unit))
+    send(api.createTag(authorization, body, xCustomerTransactionId, xLocale))
   }
 
   /** Cancel Tag This endpoint cancels a FedEx Return Tag and the associated pickup for FedEx Express and FedEx Ground shipments if the
@@ -170,9 +159,6 @@ class ShipClient[F[_]](baseUrl: String = "https://apis-sandbox.fedex.com")(using
       xCustomerTransactionId: Option[String] = None,
       xLocale: Option[String] = None
   ): F[models.SHPCResponseVO] = {
-    api
-      .cancelTag(authorization, shipmentid, body, xCustomerTransactionId, xLocale)
-      .send(backend)
-      .flatMap(_.body.fold(monad.error, monad.unit))
+    send(api.cancelTag(authorization, shipmentid, body, xCustomerTransactionId, xLocale))
   }
 }

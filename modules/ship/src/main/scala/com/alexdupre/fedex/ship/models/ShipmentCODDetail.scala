@@ -36,10 +36,12 @@ object ShipmentCODDetail {
     case GUARANTEED_FUNDS
     case COMPANY_CHECK
     case PERSONAL_CHECK
+    case UNKNOWN_DEFAULT
   }
   object CodCollectionType {
     given Encoder[CodCollectionType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[CodCollectionType] = Decoder.decodeString.emapTry(s => scala.util.Try(CodCollectionType.valueOf(s)))
+    given Decoder[CodCollectionType] =
+      Decoder.decodeString.map(s => scala.util.Try(CodCollectionType.valueOf(s)).getOrElse(CodCollectionType.UNKNOWN_DEFAULT))
   }
 
   enum ReturnReferenceIndicatorType {
@@ -47,10 +49,13 @@ object ShipmentCODDetail {
     case PO
     case REFERENCE
     case TRACKING
+    case UNKNOWN_DEFAULT
   }
   object ReturnReferenceIndicatorType {
     given Encoder[ReturnReferenceIndicatorType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[ReturnReferenceIndicatorType] = Decoder.decodeString.emapTry(s => scala.util.Try(ReturnReferenceIndicatorType.valueOf(s)))
+    given Decoder[ReturnReferenceIndicatorType] = Decoder.decodeString.map(s =>
+      scala.util.Try(ReturnReferenceIndicatorType.valueOf(s)).getOrElse(ReturnReferenceIndicatorType.UNKNOWN_DEFAULT)
+    )
   }
   given Encoder[ShipmentCODDetail] = new Encoder.AsObject[ShipmentCODDetail] {
     final def encodeObject(o: ShipmentCODDetail): JsonObject = {

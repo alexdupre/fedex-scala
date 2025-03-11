@@ -22,10 +22,11 @@ object Alert {
   enum AlertType {
     case NOTE
     case WARNING
+    case UNKNOWN_DEFAULT
   }
   object AlertType {
     given Encoder[AlertType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[AlertType] = Decoder.decodeString.emapTry(s => scala.util.Try(AlertType.valueOf(s)))
+    given Decoder[AlertType] = Decoder.decodeString.map(s => scala.util.Try(AlertType.valueOf(s)).getOrElse(AlertType.UNKNOWN_DEFAULT))
   }
   given Encoder[Alert] = new Encoder.AsObject[Alert] {
     final def encodeObject(o: Alert): JsonObject = {

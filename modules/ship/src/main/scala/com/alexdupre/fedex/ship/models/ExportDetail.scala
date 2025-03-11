@@ -34,10 +34,12 @@ object ExportDetail {
     case FILED_ELECTRONICALLY
     case SUMMARY_REPORTING
     case FEDEX_TO_STAMP
+    case UNKNOWN_DEFAULT
   }
   object B13AFilingOption {
     given Encoder[B13AFilingOption] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[B13AFilingOption] = Decoder.decodeString.emapTry(s => scala.util.Try(B13AFilingOption.valueOf(s)))
+    given Decoder[B13AFilingOption] =
+      Decoder.decodeString.map(s => scala.util.Try(B13AFilingOption.valueOf(s)).getOrElse(B13AFilingOption.UNKNOWN_DEFAULT))
   }
   given Encoder[ExportDetail] = new Encoder.AsObject[ExportDetail] {
     final def encodeObject(o: ExportDetail): JsonObject = {

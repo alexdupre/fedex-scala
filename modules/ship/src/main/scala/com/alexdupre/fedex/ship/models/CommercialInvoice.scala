@@ -61,11 +61,13 @@ object CommercialInvoice {
     case OTHER
     case ROYALTIES_AND_LICENSE_FEES
     case TAXES
+    case UNKNOWN_DEFAULT
   }
   object TaxesOrMiscellaneousChargeType {
     given Encoder[TaxesOrMiscellaneousChargeType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[TaxesOrMiscellaneousChargeType] =
-      Decoder.decodeString.emapTry(s => scala.util.Try(TaxesOrMiscellaneousChargeType.valueOf(s)))
+    given Decoder[TaxesOrMiscellaneousChargeType] = Decoder.decodeString.map(s =>
+      scala.util.Try(TaxesOrMiscellaneousChargeType.valueOf(s)).getOrElse(TaxesOrMiscellaneousChargeType.UNKNOWN_DEFAULT)
+    )
   }
 
   enum ShipmentPurpose {
@@ -75,10 +77,12 @@ object CommercialInvoice {
     case REPAIR_AND_RETURN
     case SAMPLE
     case SOLD
+    case UNKNOWN_DEFAULT
   }
   object ShipmentPurpose {
     given Encoder[ShipmentPurpose] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[ShipmentPurpose] = Decoder.decodeString.emapTry(s => scala.util.Try(ShipmentPurpose.valueOf(s)))
+    given Decoder[ShipmentPurpose] =
+      Decoder.decodeString.map(s => scala.util.Try(ShipmentPurpose.valueOf(s)).getOrElse(ShipmentPurpose.UNKNOWN_DEFAULT))
   }
   given Encoder[CommercialInvoice] = new Encoder.AsObject[CommercialInvoice] {
     final def encodeObject(o: CommercialInvoice): JsonObject = {

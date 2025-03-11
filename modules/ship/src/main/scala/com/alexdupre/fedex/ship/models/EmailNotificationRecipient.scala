@@ -44,19 +44,23 @@ object EmailNotificationRecipient {
     case ON_PICKUP_DRIVER_ASSIGNED
     case ON_PICKUP_DRIVER_DEPARTED
     case ON_PICKUP_DRIVER_EN_ROUTE
+    case UNKNOWN_DEFAULT
   }
   object NotificationEventType {
     given Encoder[NotificationEventType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[NotificationEventType] = Decoder.decodeString.emapTry(s => scala.util.Try(NotificationEventType.valueOf(s)))
+    given Decoder[NotificationEventType] =
+      Decoder.decodeString.map(s => scala.util.Try(NotificationEventType.valueOf(s)).getOrElse(NotificationEventType.UNKNOWN_DEFAULT))
   }
 
   enum NotificationFormatType {
     case HTML
     case TEXT
+    case UNKNOWN_DEFAULT
   }
   object NotificationFormatType {
     given Encoder[NotificationFormatType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[NotificationFormatType] = Decoder.decodeString.emapTry(s => scala.util.Try(NotificationFormatType.valueOf(s)))
+    given Decoder[NotificationFormatType] =
+      Decoder.decodeString.map(s => scala.util.Try(NotificationFormatType.valueOf(s)).getOrElse(NotificationFormatType.UNKNOWN_DEFAULT))
   }
 
   enum EmailNotificationRecipientType {
@@ -65,19 +69,23 @@ object EmailNotificationRecipient {
     case RECIPIENT
     case SHIPPER
     case THIRD_PARTY
+    case UNKNOWN_DEFAULT
   }
   object EmailNotificationRecipientType {
     given Encoder[EmailNotificationRecipientType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[EmailNotificationRecipientType] =
-      Decoder.decodeString.emapTry(s => scala.util.Try(EmailNotificationRecipientType.valueOf(s)))
+    given Decoder[EmailNotificationRecipientType] = Decoder.decodeString.map(s =>
+      scala.util.Try(EmailNotificationRecipientType.valueOf(s)).getOrElse(EmailNotificationRecipientType.UNKNOWN_DEFAULT)
+    )
   }
 
   enum NotificationType {
     case EMAIL
+    case UNKNOWN_DEFAULT
   }
   object NotificationType {
     given Encoder[NotificationType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[NotificationType] = Decoder.decodeString.emapTry(s => scala.util.Try(NotificationType.valueOf(s)))
+    given Decoder[NotificationType] =
+      Decoder.decodeString.map(s => scala.util.Try(NotificationType.valueOf(s)).getOrElse(NotificationType.UNKNOWN_DEFAULT))
   }
   given Encoder[EmailNotificationRecipient] = new Encoder.AsObject[EmailNotificationRecipient] {
     final def encodeObject(o: EmailNotificationRecipient): JsonObject = {

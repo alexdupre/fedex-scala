@@ -20,10 +20,12 @@ object AlcoholDetail {
   enum AlcoholRecipientType {
     case LICENSEE
     case CONSUMER
+    case UNKNOWN_DEFAULT
   }
   object AlcoholRecipientType {
     given Encoder[AlcoholRecipientType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[AlcoholRecipientType] = Decoder.decodeString.emapTry(s => scala.util.Try(AlcoholRecipientType.valueOf(s)))
+    given Decoder[AlcoholRecipientType] =
+      Decoder.decodeString.map(s => scala.util.Try(AlcoholRecipientType.valueOf(s)).getOrElse(AlcoholRecipientType.UNKNOWN_DEFAULT))
   }
   given Encoder[AlcoholDetail] = new Encoder.AsObject[AlcoholDetail] {
     final def encodeObject(o: AlcoholDetail): JsonObject = {

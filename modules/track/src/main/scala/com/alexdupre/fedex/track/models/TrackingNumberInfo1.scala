@@ -41,10 +41,12 @@ object TrackingNumberInfo1 {
     case FXK
     case FDC
     case FDCC
+    case UNKNOWN_DEFAULT
   }
   object CarrierCode {
     given Encoder[CarrierCode] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[CarrierCode] = Decoder.decodeString.emapTry(s => scala.util.Try(CarrierCode.valueOf(s)))
+    given Decoder[CarrierCode] =
+      Decoder.decodeString.map(s => scala.util.Try(CarrierCode.valueOf(s)).getOrElse(CarrierCode.UNKNOWN_DEFAULT))
   }
   given Encoder[TrackingNumberInfo1] = new Encoder.AsObject[TrackingNumberInfo1] {
     final def encodeObject(o: TrackingNumberInfo1): JsonObject = {

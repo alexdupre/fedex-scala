@@ -41,19 +41,22 @@ object LabelSpecification {
   enum LabelOrder {
     case SHIPPING_LABEL_FIRST
     case SHIPPING_LABEL_LAST
+    case UNKNOWN_DEFAULT
   }
   object LabelOrder {
     given Encoder[LabelOrder] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[LabelOrder] = Decoder.decodeString.emapTry(s => scala.util.Try(LabelOrder.valueOf(s)))
+    given Decoder[LabelOrder] = Decoder.decodeString.map(s => scala.util.Try(LabelOrder.valueOf(s)).getOrElse(LabelOrder.UNKNOWN_DEFAULT))
   }
 
   enum LabelFormatType {
     case COMMON2D
     case LABEL_DATA_ONLY
+    case UNKNOWN_DEFAULT
   }
   object LabelFormatType {
     given Encoder[LabelFormatType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[LabelFormatType] = Decoder.decodeString.emapTry(s => scala.util.Try(LabelFormatType.valueOf(s)))
+    given Decoder[LabelFormatType] =
+      Decoder.decodeString.map(s => scala.util.Try(LabelFormatType.valueOf(s)).getOrElse(LabelFormatType.UNKNOWN_DEFAULT))
   }
 
   enum LabelStockType {
@@ -75,10 +78,12 @@ object LabelSpecification {
     case STOCK_4X9
     case STOCK_4X85_TRAILING_DOC_TAB
     case STOCK_4X105_TRAILING_DOC_TAB
+    case UNKNOWN_DEFAULT
   }
   object LabelStockType {
     given Encoder[LabelStockType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[LabelStockType] = Decoder.decodeString.emapTry(s => scala.util.Try(LabelStockType.valueOf(s)))
+    given Decoder[LabelStockType] =
+      Decoder.decodeString.map(s => scala.util.Try(LabelStockType.valueOf(s)).getOrElse(LabelStockType.UNKNOWN_DEFAULT))
   }
 
   enum LabelRotation {
@@ -86,10 +91,12 @@ object LabelSpecification {
     case RIGHT
     case UPSIDE_DOWN
     case NONE
+    case UNKNOWN_DEFAULT
   }
   object LabelRotation {
     given Encoder[LabelRotation] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[LabelRotation] = Decoder.decodeString.emapTry(s => scala.util.Try(LabelRotation.valueOf(s)))
+    given Decoder[LabelRotation] =
+      Decoder.decodeString.map(s => scala.util.Try(LabelRotation.valueOf(s)).getOrElse(LabelRotation.UNKNOWN_DEFAULT))
   }
 
   enum ImageType {
@@ -97,19 +104,22 @@ object LabelSpecification {
     case EPL2
     case PDF
     case PNG
+    case UNKNOWN_DEFAULT
   }
   object ImageType {
     given Encoder[ImageType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[ImageType] = Decoder.decodeString.emapTry(s => scala.util.Try(ImageType.valueOf(s)))
+    given Decoder[ImageType] = Decoder.decodeString.map(s => scala.util.Try(ImageType.valueOf(s)).getOrElse(ImageType.UNKNOWN_DEFAULT))
   }
 
   enum LabelPrintingOrientation {
     case BOTTOM_EDGE_OF_TEXT_FIRST
     case TOP_EDGE_OF_TEXT_FIRST
+    case UNKNOWN_DEFAULT
   }
   object LabelPrintingOrientation {
     given Encoder[LabelPrintingOrientation] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[LabelPrintingOrientation] = Decoder.decodeString.emapTry(s => scala.util.Try(LabelPrintingOrientation.valueOf(s)))
+    given Decoder[LabelPrintingOrientation] =
+      Decoder.decodeString.map(s => scala.util.Try(LabelPrintingOrientation.valueOf(s)).getOrElse(LabelPrintingOrientation.UNKNOWN_DEFAULT))
   }
   given Encoder[LabelSpecification] = new Encoder.AsObject[LabelSpecification] {
     final def encodeObject(o: LabelSpecification): JsonObject = {

@@ -24,10 +24,12 @@ object ShippingDocumentDispositionDetail {
     case QUEUED
     case RETURNED
     case STORED
+    case UNKNOWN_DEFAULT
   }
   object DispositionType {
     given Encoder[DispositionType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[DispositionType] = Decoder.decodeString.emapTry(s => scala.util.Try(DispositionType.valueOf(s)))
+    given Decoder[DispositionType] =
+      Decoder.decodeString.map(s => scala.util.Try(DispositionType.valueOf(s)).getOrElse(DispositionType.UNKNOWN_DEFAULT))
   }
   given Encoder[ShippingDocumentDispositionDetail] = new Encoder.AsObject[ShippingDocumentDispositionDetail] {
     final def encodeObject(o: ShippingDocumentDispositionDetail): JsonObject = {

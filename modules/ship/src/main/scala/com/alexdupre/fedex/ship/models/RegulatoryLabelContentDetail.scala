@@ -20,18 +20,21 @@ object RegulatoryLabelContentDetail {
     case CONTENT_ON_SHIPPING_LABEL_PREFERRED
     case CONTENT_ON_SUPPLEMENTAL_LABEL_ONLY
     case CONTENT_ON_SHIPPING_LABEL_ONLY
+    case UNKNOWN_DEFAULT
   }
   object GenerationOptions {
     given Encoder[GenerationOptions] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[GenerationOptions] = Decoder.decodeString.emapTry(s => scala.util.Try(GenerationOptions.valueOf(s)))
+    given Decoder[GenerationOptions] =
+      Decoder.decodeString.map(s => scala.util.Try(GenerationOptions.valueOf(s)).getOrElse(GenerationOptions.UNKNOWN_DEFAULT))
   }
 
   enum Type {
     case ALCOHOL_SHIPMENT_LABEL
+    case UNKNOWN_DEFAULT
   }
   object Type {
     given Encoder[Type] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Type] = Decoder.decodeString.emapTry(s => scala.util.Try(Type.valueOf(s)))
+    given Decoder[Type] = Decoder.decodeString.map(s => scala.util.Try(Type.valueOf(s)).getOrElse(Type.UNKNOWN_DEFAULT))
   }
   given Encoder[RegulatoryLabelContentDetail] = new Encoder.AsObject[RegulatoryLabelContentDetail] {
     final def encodeObject(o: RegulatoryLabelContentDetail): JsonObject = {

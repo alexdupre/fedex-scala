@@ -20,6 +20,15 @@ class TrackAPI(baseUrl: String = "https://apis-sandbox.fedex.com") {
     }
   }
 
+  private def mapAPIError[T: Decoder](description: String, ex: ResponseException.UnexpectedStatusCode[_]) = {
+    parse(ex.body.toString)
+      .flatMap(_.as[T])
+      .fold(
+        e => TrackDeserializationException("Deserialization Error: " + e.getMessage, ex.body.toString, ex),
+        o => TrackAPIException(description, o, ex)
+      )
+  }
+
   /** Track Multiple Piece Shipment This endpoint returns tracking information for multiplee piece shipments, Group MPS, or an outbounddd
     * shipment which is linked to a return shipment.<br><i>Note: FedEx APIs do not support Cross-Origin Resource Sharing (CORS)
     * mechanism.</i>
@@ -40,7 +49,7 @@ class TrackAPI(baseUrl: String = "https://apis-sandbox.fedex.com") {
       body: models.FullSchemaMultiplePieceShipment,
       xCustomerTransactionId: Option[String] = None,
       xLocale: Option[String] = None
-  ): Request[Either[TrackAPIException, models.TrkcResponseVOAssociated]] = {
+  ): Request[Either[TrackException, models.TrkcResponseVOAssociated]] = {
     val __body = body
     val __headers = Map(
       "x-customer-transaction-id" -> xCustomerTransactionId,
@@ -52,30 +61,20 @@ class TrackAPI(baseUrl: String = "https://apis-sandbox.fedex.com") {
       .headers(cleanAndStringify(__headers))
       .body(asJson(__body))
       .response(asJson[models.TrkcResponseVOAssociated].mapLeft {
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 400 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO])
-            .fold(e => throw e, o => TrackAPIException("Bad Request", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 401 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO401])
-            .fold(e => throw e, o => TrackAPIException("Unauthorized", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 403 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO403])
-            .fold(e => throw e, o => TrackAPIException("Forbidden", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 404 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO404])
-            .fold(e => throw e, o => TrackAPIException("Not Found", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 500 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO500])
-            .fold(e => throw e, o => TrackAPIException("Failure", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 503 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO503])
-            .fold(e => throw e, o => TrackAPIException("Service Unavailable", o, ex))
+        case ex @ ResponseException.DeserializationException(body, cause, response) =>
+          TrackDeserializationException("Deserialization Error: " + ex.getMessage, body, ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 400 =>
+          mapAPIError[models.ErrorResponseVO]("Bad Request", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 401 =>
+          mapAPIError[models.ErrorResponseVO401]("Unauthorized", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 403 =>
+          mapAPIError[models.ErrorResponseVO403]("Forbidden", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 404 =>
+          mapAPIError[models.ErrorResponseVO404]("Not Found", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 500 =>
+          mapAPIError[models.ErrorResponseVO500]("Failure", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 503 =>
+          mapAPIError[models.ErrorResponseVO503]("Service Unavailable", ex)
         case ex: Throwable => throw ex
         case unexpected    => sys.error("Unexpected error: " + unexpected)
       })
@@ -100,7 +99,7 @@ class TrackAPI(baseUrl: String = "https://apis-sandbox.fedex.com") {
       body: models.FullSchemaNotification,
       xCustomerTransactionId: Option[String] = None,
       xLocale: Option[String] = None
-  ): Request[Either[TrackAPIException, models.TrkcResponseVONotifications]] = {
+  ): Request[Either[TrackException, models.TrkcResponseVONotifications]] = {
     val __body = body
     val __headers = Map(
       "x-customer-transaction-id" -> xCustomerTransactionId,
@@ -112,30 +111,20 @@ class TrackAPI(baseUrl: String = "https://apis-sandbox.fedex.com") {
       .headers(cleanAndStringify(__headers))
       .body(asJson(__body))
       .response(asJson[models.TrkcResponseVONotifications].mapLeft {
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 400 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO])
-            .fold(e => throw e, o => TrackAPIException("Bad Request", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 401 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO401])
-            .fold(e => throw e, o => TrackAPIException("Unauthorized", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 403 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO403])
-            .fold(e => throw e, o => TrackAPIException("Forbidden", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 404 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO404])
-            .fold(e => throw e, o => TrackAPIException("Not Found", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 500 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO500])
-            .fold(e => throw e, o => TrackAPIException("Failure", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 503 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO503])
-            .fold(e => throw e, o => TrackAPIException("Service Unavailable", o, ex))
+        case ex @ ResponseException.DeserializationException(body, cause, response) =>
+          TrackDeserializationException("Deserialization Error: " + ex.getMessage, body, ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 400 =>
+          mapAPIError[models.ErrorResponseVO]("Bad Request", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 401 =>
+          mapAPIError[models.ErrorResponseVO401]("Unauthorized", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 403 =>
+          mapAPIError[models.ErrorResponseVO403]("Forbidden", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 404 =>
+          mapAPIError[models.ErrorResponseVO404]("Not Found", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 500 =>
+          mapAPIError[models.ErrorResponseVO500]("Failure", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 503 =>
+          mapAPIError[models.ErrorResponseVO503]("Service Unavailable", ex)
         case ex: Throwable => throw ex
         case unexpected    => sys.error("Unexpected error: " + unexpected)
       })
@@ -162,7 +151,7 @@ class TrackAPI(baseUrl: String = "https://apis-sandbox.fedex.com") {
       body: models.FullSchemaTrackingReferences,
       xCustomerTransactionId: Option[String] = None,
       xLocale: Option[String] = None
-  ): Request[Either[TrackAPIException, models.TrkcResponseVOReferenceNumber]] = {
+  ): Request[Either[TrackException, models.TrkcResponseVOReferenceNumber]] = {
     val __body = body
     val __headers = Map(
       "x-customer-transaction-id" -> xCustomerTransactionId,
@@ -174,30 +163,20 @@ class TrackAPI(baseUrl: String = "https://apis-sandbox.fedex.com") {
       .headers(cleanAndStringify(__headers))
       .body(asJson(__body))
       .response(asJson[models.TrkcResponseVOReferenceNumber].mapLeft {
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 400 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO])
-            .fold(e => throw e, o => TrackAPIException("Bad Request", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 401 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO401])
-            .fold(e => throw e, o => TrackAPIException("Unauthorized", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 403 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO403])
-            .fold(e => throw e, o => TrackAPIException("Forbidden", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 404 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO404])
-            .fold(e => throw e, o => TrackAPIException("Not Found", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 500 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO500])
-            .fold(e => throw e, o => TrackAPIException("Failure", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 503 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO503])
-            .fold(e => throw e, o => TrackAPIException("Service Unavailable", o, ex))
+        case ex @ ResponseException.DeserializationException(body, cause, response) =>
+          TrackDeserializationException("Deserialization Error: " + ex.getMessage, body, ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 400 =>
+          mapAPIError[models.ErrorResponseVO]("Bad Request", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 401 =>
+          mapAPIError[models.ErrorResponseVO401]("Unauthorized", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 403 =>
+          mapAPIError[models.ErrorResponseVO403]("Forbidden", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 404 =>
+          mapAPIError[models.ErrorResponseVO404]("Not Found", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 500 =>
+          mapAPIError[models.ErrorResponseVO500]("Failure", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 503 =>
+          mapAPIError[models.ErrorResponseVO503]("Service Unavailable", ex)
         case ex: Throwable => throw ex
         case unexpected    => sys.error("Unexpected error: " + unexpected)
       })
@@ -222,7 +201,7 @@ class TrackAPI(baseUrl: String = "https://apis-sandbox.fedex.com") {
       body: models.FullSchemaTCN,
       xCustomerTransactionId: Option[String] = None,
       xLocale: Option[String] = None
-  ): Request[Either[TrackAPIException, models.TrkcResponseVOTCN]] = {
+  ): Request[Either[TrackException, models.TrkcResponseVOTCN]] = {
     val __body = body
     val __headers = Map(
       "x-customer-transaction-id" -> xCustomerTransactionId,
@@ -234,30 +213,20 @@ class TrackAPI(baseUrl: String = "https://apis-sandbox.fedex.com") {
       .headers(cleanAndStringify(__headers))
       .body(asJson(__body))
       .response(asJson[models.TrkcResponseVOTCN].mapLeft {
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 400 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO])
-            .fold(e => throw e, o => TrackAPIException("Bad Request", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 401 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO401])
-            .fold(e => throw e, o => TrackAPIException("Unauthorized", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 403 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO403])
-            .fold(e => throw e, o => TrackAPIException("Forbidden", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 404 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO404])
-            .fold(e => throw e, o => TrackAPIException("Not Found", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 500 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO500])
-            .fold(e => throw e, o => TrackAPIException("Failure", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 503 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO503])
-            .fold(e => throw e, o => TrackAPIException("Service Unavailable", o, ex))
+        case ex @ ResponseException.DeserializationException(body, cause, response) =>
+          TrackDeserializationException("Deserialization Error: " + ex.getMessage, body, ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 400 =>
+          mapAPIError[models.ErrorResponseVO]("Bad Request", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 401 =>
+          mapAPIError[models.ErrorResponseVO401]("Unauthorized", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 403 =>
+          mapAPIError[models.ErrorResponseVO403]("Forbidden", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 404 =>
+          mapAPIError[models.ErrorResponseVO404]("Not Found", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 500 =>
+          mapAPIError[models.ErrorResponseVO500]("Failure", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 503 =>
+          mapAPIError[models.ErrorResponseVO503]("Service Unavailable", ex)
         case ex: Throwable => throw ex
         case unexpected    => sys.error("Unexpected error: " + unexpected)
       })
@@ -280,7 +249,7 @@ class TrackAPI(baseUrl: String = "https://apis-sandbox.fedex.com") {
       body: models.FullSchemaSPOD,
       xCustomerTransactionId: Option[String] = None,
       xLocale: Option[String] = None
-  ): Request[Either[TrackAPIException, models.TrkcResponseVOSPOD]] = {
+  ): Request[Either[TrackException, models.TrkcResponseVOSPOD]] = {
     val __body = body
     val __headers = Map(
       "x-customer-transaction-id" -> xCustomerTransactionId,
@@ -292,30 +261,20 @@ class TrackAPI(baseUrl: String = "https://apis-sandbox.fedex.com") {
       .headers(cleanAndStringify(__headers))
       .body(asJson(__body))
       .response(asJson[models.TrkcResponseVOSPOD].mapLeft {
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 400 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO])
-            .fold(e => throw e, o => TrackAPIException("Bad Request", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 401 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO401])
-            .fold(e => throw e, o => TrackAPIException("Unauthorized", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 403 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO403])
-            .fold(e => throw e, o => TrackAPIException("Forbidden", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 404 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO404])
-            .fold(e => throw e, o => TrackAPIException("Not Found", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 500 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO500])
-            .fold(e => throw e, o => TrackAPIException("Failure", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 503 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO503])
-            .fold(e => throw e, o => TrackAPIException("Service Unavailable", o, ex))
+        case ex @ ResponseException.DeserializationException(body, cause, response) =>
+          TrackDeserializationException("Deserialization Error: " + ex.getMessage, body, ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 400 =>
+          mapAPIError[models.ErrorResponseVO]("Bad Request", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 401 =>
+          mapAPIError[models.ErrorResponseVO401]("Unauthorized", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 403 =>
+          mapAPIError[models.ErrorResponseVO403]("Forbidden", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 404 =>
+          mapAPIError[models.ErrorResponseVO404]("Not Found", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 500 =>
+          mapAPIError[models.ErrorResponseVO500]("Failure", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 503 =>
+          mapAPIError[models.ErrorResponseVO503]("Service Unavailable", ex)
         case ex: Throwable => throw ex
         case unexpected    => sys.error("Unexpected error: " + unexpected)
       })
@@ -340,7 +299,7 @@ class TrackAPI(baseUrl: String = "https://apis-sandbox.fedex.com") {
       body: models.FullSchemaTrackingNumbers,
       xCustomerTransactionId: Option[String] = None,
       xLocale: Option[String] = None
-  ): Request[Either[TrackAPIException, models.TrkcResponseVOTrackingNumber]] = {
+  ): Request[Either[TrackException, models.TrkcResponseVOTrackingNumber]] = {
     val __body = body
     val __headers = Map(
       "x-customer-transaction-id" -> xCustomerTransactionId,
@@ -352,30 +311,20 @@ class TrackAPI(baseUrl: String = "https://apis-sandbox.fedex.com") {
       .headers(cleanAndStringify(__headers))
       .body(asJson(__body))
       .response(asJson[models.TrkcResponseVOTrackingNumber].mapLeft {
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 400 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO])
-            .fold(e => throw e, o => TrackAPIException("Bad Request", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 401 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO401])
-            .fold(e => throw e, o => TrackAPIException("Unauthorized", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 403 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO403])
-            .fold(e => throw e, o => TrackAPIException("Forbidden", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 404 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO404])
-            .fold(e => throw e, o => TrackAPIException("Not Found", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 500 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO500])
-            .fold(e => throw e, o => TrackAPIException("Failure", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 503 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO503])
-            .fold(e => throw e, o => TrackAPIException("Service Unavailable", o, ex))
+        case ex @ ResponseException.DeserializationException(body, cause, response) =>
+          TrackDeserializationException("Deserialization Error: " + ex.getMessage, body, ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 400 =>
+          mapAPIError[models.ErrorResponseVO]("Bad Request", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 401 =>
+          mapAPIError[models.ErrorResponseVO401]("Unauthorized", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 403 =>
+          mapAPIError[models.ErrorResponseVO403]("Forbidden", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 404 =>
+          mapAPIError[models.ErrorResponseVO404]("Not Found", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 500 =>
+          mapAPIError[models.ErrorResponseVO500]("Failure", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 503 =>
+          mapAPIError[models.ErrorResponseVO503]("Service Unavailable", ex)
         case ex: Throwable => throw ex
         case unexpected    => sys.error("Unexpected error: " + unexpected)
       })

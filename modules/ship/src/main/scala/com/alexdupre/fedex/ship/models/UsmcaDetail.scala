@@ -19,10 +19,12 @@ object UsmcaDetail {
     case C
     case D
     case E
+    case UNKNOWN_DEFAULT
   }
   object OriginCriterion {
     given Encoder[OriginCriterion] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[OriginCriterion] = Decoder.decodeString.emapTry(s => scala.util.Try(OriginCriterion.valueOf(s)))
+    given Decoder[OriginCriterion] =
+      Decoder.decodeString.map(s => scala.util.Try(OriginCriterion.valueOf(s)).getOrElse(OriginCriterion.UNKNOWN_DEFAULT))
   }
   given Encoder[UsmcaDetail] = new Encoder.AsObject[UsmcaDetail] {
     final def encodeObject(o: UsmcaDetail): JsonObject = {

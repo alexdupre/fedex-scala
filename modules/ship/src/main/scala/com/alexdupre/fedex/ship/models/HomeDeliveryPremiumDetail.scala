@@ -24,10 +24,12 @@ object HomeDeliveryPremiumDetail {
     case APPOINTMENT
     case DATE_CERTAIN
     case EVENING
+    case UNKNOWN_DEFAULT
   }
   object HomedeliveryPremiumType {
     given Encoder[HomedeliveryPremiumType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[HomedeliveryPremiumType] = Decoder.decodeString.emapTry(s => scala.util.Try(HomedeliveryPremiumType.valueOf(s)))
+    given Decoder[HomedeliveryPremiumType] =
+      Decoder.decodeString.map(s => scala.util.Try(HomedeliveryPremiumType.valueOf(s)).getOrElse(HomedeliveryPremiumType.UNKNOWN_DEFAULT))
   }
   given Encoder[HomeDeliveryPremiumDetail] = new Encoder.AsObject[HomeDeliveryPremiumDetail] {
     final def encodeObject(o: HomeDeliveryPremiumDetail): JsonObject = {

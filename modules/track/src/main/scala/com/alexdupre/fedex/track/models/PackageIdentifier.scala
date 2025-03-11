@@ -52,10 +52,11 @@ object PackageIdentifier {
     case TRANSBORDER_DISTRIBUTION
     case TRANSPORTATION_CONTROL_NUMBER
     case VIRTUAL_CONSOLIDATION
+    case UNKNOWN_DEFAULT
   }
   object Type {
     given Encoder[Type] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Type] = Decoder.decodeString.emapTry(s => scala.util.Try(Type.valueOf(s)))
+    given Decoder[Type] = Decoder.decodeString.map(s => scala.util.Try(Type.valueOf(s)).getOrElse(Type.UNKNOWN_DEFAULT))
   }
   given Encoder[PackageIdentifier] = new Encoder.AsObject[PackageIdentifier] {
     final def encodeObject(o: PackageIdentifier): JsonObject = {

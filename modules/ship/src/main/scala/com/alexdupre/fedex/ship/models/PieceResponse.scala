@@ -70,10 +70,12 @@ object PieceResponse {
     case SMARTPOST
     case EXPRESS_PARCEL
     case NULL
+    case UNKNOWN_DEFAULT
   }
   object ServiceCategory {
     given Encoder[ServiceCategory] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[ServiceCategory] = Decoder.decodeString.emapTry(s => scala.util.Try(ServiceCategory.valueOf(s)))
+    given Decoder[ServiceCategory] =
+      Decoder.decodeString.map(s => scala.util.Try(ServiceCategory.valueOf(s)).getOrElse(ServiceCategory.UNKNOWN_DEFAULT))
   }
   given Encoder[PieceResponse] = new Encoder.AsObject[PieceResponse] {
     final def encodeObject(o: PieceResponse): JsonObject = {

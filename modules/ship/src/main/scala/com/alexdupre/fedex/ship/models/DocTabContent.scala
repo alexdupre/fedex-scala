@@ -21,10 +21,12 @@ object DocTabContent {
     case MINIMUM
     case STANDARD
     case ZONE001
+    case UNKNOWN_DEFAULT
   }
   object DocTabContentType {
     given Encoder[DocTabContentType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[DocTabContentType] = Decoder.decodeString.emapTry(s => scala.util.Try(DocTabContentType.valueOf(s)))
+    given Decoder[DocTabContentType] =
+      Decoder.decodeString.map(s => scala.util.Try(DocTabContentType.valueOf(s)).getOrElse(DocTabContentType.UNKNOWN_DEFAULT))
   }
   given Encoder[DocTabContent] = new Encoder.AsObject[DocTabContent] {
     final def encodeObject(o: DocTabContent): JsonObject = {

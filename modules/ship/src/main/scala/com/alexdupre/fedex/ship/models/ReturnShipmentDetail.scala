@@ -21,10 +21,11 @@ object ReturnShipmentDetail {
   enum ReturnType {
     case PENDING
     case PRINT_RETURN_LABEL
+    case UNKNOWN_DEFAULT
   }
   object ReturnType {
     given Encoder[ReturnType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[ReturnType] = Decoder.decodeString.emapTry(s => scala.util.Try(ReturnType.valueOf(s)))
+    given Decoder[ReturnType] = Decoder.decodeString.map(s => scala.util.Try(ReturnType.valueOf(s)).getOrElse(ReturnType.UNKNOWN_DEFAULT))
   }
   given Encoder[ReturnShipmentDetail] = new Encoder.AsObject[ReturnShipmentDetail] {
     final def encodeObject(o: ReturnShipmentDetail): JsonObject = {

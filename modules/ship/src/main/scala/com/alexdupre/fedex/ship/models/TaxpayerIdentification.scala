@@ -32,10 +32,11 @@ object TaxpayerIdentification {
     case BUSINESS_NATIONAL
     case BUSINESS_STATE
     case BUSINESS_UNION
+    case UNKNOWN_DEFAULT
   }
   object TinType {
     given Encoder[TinType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[TinType] = Decoder.decodeString.emapTry(s => scala.util.Try(TinType.valueOf(s)))
+    given Decoder[TinType] = Decoder.decodeString.map(s => scala.util.Try(TinType.valueOf(s)).getOrElse(TinType.UNKNOWN_DEFAULT))
   }
   given Encoder[TaxpayerIdentification] = new Encoder.AsObject[TaxpayerIdentification] {
     final def encodeObject(o: TaxpayerIdentification): JsonObject = {

@@ -18,10 +18,11 @@ object DocumentFormatOptionsRequested {
     case SHIPPING_LABEL_FIRST
     case SHIPPING_LABEL_LAST
     case SUPPRESS_ADDITIONAL_LANGUAGES
+    case UNKNOWN_DEFAULT
   }
   object Options {
     given Encoder[Options] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Options] = Decoder.decodeString.emapTry(s => scala.util.Try(Options.valueOf(s)))
+    given Decoder[Options] = Decoder.decodeString.map(s => scala.util.Try(Options.valueOf(s)).getOrElse(Options.UNKNOWN_DEFAULT))
   }
   given Encoder[DocumentFormatOptionsRequested] = new Encoder.AsObject[DocumentFormatOptionsRequested] {
     final def encodeObject(o: DocumentFormatOptionsRequested): JsonObject = {

@@ -30,10 +30,12 @@ case class FullSchemaCancelShipment(
 object FullSchemaCancelShipment {
   enum DeletionControl {
     case DELETE_ALL_PACKAGES
+    case UNKNOWN_DEFAULT
   }
   object DeletionControl {
     given Encoder[DeletionControl] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[DeletionControl] = Decoder.decodeString.emapTry(s => scala.util.Try(DeletionControl.valueOf(s)))
+    given Decoder[DeletionControl] =
+      Decoder.decodeString.map(s => scala.util.Try(DeletionControl.valueOf(s)).getOrElse(DeletionControl.UNKNOWN_DEFAULT))
   }
   given Encoder[FullSchemaCancelShipment] = new Encoder.AsObject[FullSchemaCancelShipment] {
     final def encodeObject(o: FullSchemaCancelShipment): JsonObject = {

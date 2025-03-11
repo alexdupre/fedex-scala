@@ -28,10 +28,11 @@ object DocTabContentBarcoded {
     case POSTNET
     case QR_CODE
     case UCC128
+    case UNKNOWN_DEFAULT
   }
   object Symbology {
     given Encoder[Symbology] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Symbology] = Decoder.decodeString.emapTry(s => scala.util.Try(Symbology.valueOf(s)))
+    given Decoder[Symbology] = Decoder.decodeString.map(s => scala.util.Try(Symbology.valueOf(s)).getOrElse(Symbology.UNKNOWN_DEFAULT))
   }
   given Encoder[DocTabContentBarcoded] = new Encoder.AsObject[DocTabContentBarcoded] {
     final def encodeObject(o: DocTabContentBarcoded): JsonObject = {

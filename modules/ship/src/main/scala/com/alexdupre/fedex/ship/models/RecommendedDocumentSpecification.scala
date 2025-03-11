@@ -41,10 +41,11 @@ object RecommendedDocumentSpecification {
     case UNITED_STATES_CARIBBEAN_BASIN_TRADE_PARTNERSHIP_ACT_CERTIFICATE_OF_ORIGIN_NON_TEXTILES
     case UNITED_STATES_NEW_WATCH_WORKSHEET
     case UNITED_STATES_WATCH_REPAIR_DECLARATION
+    case UNKNOWN_DEFAULT
   }
   object Types {
     given Encoder[Types] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Types] = Decoder.decodeString.emapTry(s => scala.util.Try(Types.valueOf(s)))
+    given Decoder[Types] = Decoder.decodeString.map(s => scala.util.Try(Types.valueOf(s)).getOrElse(Types.UNKNOWN_DEFAULT))
   }
   given Encoder[RecommendedDocumentSpecification] = new Encoder.AsObject[RecommendedDocumentSpecification] {
     final def encodeObject(o: RecommendedDocumentSpecification): JsonObject = {

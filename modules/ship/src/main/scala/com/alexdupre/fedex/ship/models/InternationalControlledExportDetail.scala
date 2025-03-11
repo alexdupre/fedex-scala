@@ -38,10 +38,11 @@ object InternationalControlledExportDetail {
     case FROM_FOREIGN_TRADE_ZONE
     case DEA_486
     case DSP_94
+    case UNKNOWN_DEFAULT
   }
   object Type {
     given Encoder[Type] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Type] = Decoder.decodeString.emapTry(s => scala.util.Try(Type.valueOf(s)))
+    given Decoder[Type] = Decoder.decodeString.map(s => scala.util.Try(Type.valueOf(s)).getOrElse(Type.UNKNOWN_DEFAULT))
   }
   given Encoder[InternationalControlledExportDetail] = new Encoder.AsObject[InternationalControlledExportDetail] {
     final def encodeObject(o: InternationalControlledExportDetail): JsonObject = {

@@ -39,19 +39,22 @@ object VariableHandlingChargeDetail {
     case PREFERRED
     case PREFERRED_INCENTIVE
     case PREFERRED_CURRENCY
+    case UNKNOWN_DEFAULT
   }
   object RateType {
     given Encoder[RateType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[RateType] = Decoder.decodeString.emapTry(s => scala.util.Try(RateType.valueOf(s)))
+    given Decoder[RateType] = Decoder.decodeString.map(s => scala.util.Try(RateType.valueOf(s)).getOrElse(RateType.UNKNOWN_DEFAULT))
   }
 
   enum RateLevelType {
     case BUNDLED_RATE
     case INDIVIDUAL_PACKAGE_RATE
+    case UNKNOWN_DEFAULT
   }
   object RateLevelType {
     given Encoder[RateLevelType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[RateLevelType] = Decoder.decodeString.emapTry(s => scala.util.Try(RateLevelType.valueOf(s)))
+    given Decoder[RateLevelType] =
+      Decoder.decodeString.map(s => scala.util.Try(RateLevelType.valueOf(s)).getOrElse(RateLevelType.UNKNOWN_DEFAULT))
   }
 
   enum RateElementBasis {
@@ -59,10 +62,12 @@ object VariableHandlingChargeDetail {
     case NET_FREIGHT
     case BASE_CHARGE
     case NET_CHARGE_EXCLUDING_TAXES
+    case UNKNOWN_DEFAULT
   }
   object RateElementBasis {
     given Encoder[RateElementBasis] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[RateElementBasis] = Decoder.decodeString.emapTry(s => scala.util.Try(RateElementBasis.valueOf(s)))
+    given Decoder[RateElementBasis] =
+      Decoder.decodeString.map(s => scala.util.Try(RateElementBasis.valueOf(s)).getOrElse(RateElementBasis.UNKNOWN_DEFAULT))
   }
   given Encoder[VariableHandlingChargeDetail] = new Encoder.AsObject[VariableHandlingChargeDetail] {
     final def encodeObject(o: VariableHandlingChargeDetail): JsonObject = {

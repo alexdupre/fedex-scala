@@ -20,10 +20,11 @@ object RecipientCustomsId {
     case COMPANY
     case INDIVIDUAL
     case PASSPORT
+    case UNKNOWN_DEFAULT
   }
   object Type {
     given Encoder[Type] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Type] = Decoder.decodeString.emapTry(s => scala.util.Try(Type.valueOf(s)))
+    given Decoder[Type] = Decoder.decodeString.map(s => scala.util.Try(Type.valueOf(s)).getOrElse(Type.UNKNOWN_DEFAULT))
   }
   given Encoder[RecipientCustomsId] = new Encoder.AsObject[RecipientCustomsId] {
     final def encodeObject(o: RecipientCustomsId): JsonObject = {

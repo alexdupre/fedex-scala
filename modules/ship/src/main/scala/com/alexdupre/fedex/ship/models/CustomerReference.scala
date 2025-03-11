@@ -32,10 +32,12 @@ object CustomerReference {
     case P_O_NUMBER
     case INTRACOUNTRY_REGULATORY_REFERENCE
     case RMA_ASSOCIATION
+    case UNKNOWN_DEFAULT
   }
   object CustomerReferenceType {
     given Encoder[CustomerReferenceType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[CustomerReferenceType] = Decoder.decodeString.emapTry(s => scala.util.Try(CustomerReferenceType.valueOf(s)))
+    given Decoder[CustomerReferenceType] =
+      Decoder.decodeString.map(s => scala.util.Try(CustomerReferenceType.valueOf(s)).getOrElse(CustomerReferenceType.UNKNOWN_DEFAULT))
   }
   given Encoder[CustomerReference] = new Encoder.AsObject[CustomerReference] {
     final def encodeObject(o: CustomerReference): JsonObject = {

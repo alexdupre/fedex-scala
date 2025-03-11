@@ -18,10 +18,11 @@ case class Weight4(
 object Weight4 {
   enum Units {
     case KG
+    case UNKNOWN_DEFAULT
   }
   object Units {
     given Encoder[Units] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Units] = Decoder.decodeString.emapTry(s => scala.util.Try(Units.valueOf(s)))
+    given Decoder[Units] = Decoder.decodeString.map(s => scala.util.Try(Units.valueOf(s)).getOrElse(Units.UNKNOWN_DEFAULT))
   }
   given Encoder[Weight4] = new Encoder.AsObject[Weight4] {
     final def encodeObject(o: Weight4): JsonObject = {

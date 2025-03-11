@@ -36,10 +36,12 @@ object ShippingDocumentSpecification {
     case PRO_FORMA_INVOICE
     case RETURN_INSTRUCTIONS
     case USMCA_COMMERCIAL_INVOICE_CERTIFICATION_OF_ORIGIN
+    case UNKNOWN_DEFAULT
   }
   object ShippingDocumentTypes {
     given Encoder[ShippingDocumentTypes] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[ShippingDocumentTypes] = Decoder.decodeString.emapTry(s => scala.util.Try(ShippingDocumentTypes.valueOf(s)))
+    given Decoder[ShippingDocumentTypes] =
+      Decoder.decodeString.map(s => scala.util.Try(ShippingDocumentTypes.valueOf(s)).getOrElse(ShippingDocumentTypes.UNKNOWN_DEFAULT))
   }
   given Encoder[ShippingDocumentSpecification] = new Encoder.AsObject[ShippingDocumentSpecification] {
     final def encodeObject(o: ShippingDocumentSpecification): JsonObject = {

@@ -41,10 +41,12 @@ object PackageSpecialServicesRequested {
     case INDIRECT
     case DIRECT
     case ADULT
+    case UNKNOWN_DEFAULT
   }
   object SignatureOptionType {
     given Encoder[SignatureOptionType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[SignatureOptionType] = Decoder.decodeString.emapTry(s => scala.util.Try(SignatureOptionType.valueOf(s)))
+    given Decoder[SignatureOptionType] =
+      Decoder.decodeString.map(s => scala.util.Try(SignatureOptionType.valueOf(s)).getOrElse(SignatureOptionType.UNKNOWN_DEFAULT))
   }
   given Encoder[PackageSpecialServicesRequested] = new Encoder.AsObject[PackageSpecialServicesRequested] {
     final def encodeObject(o: PackageSpecialServicesRequested): JsonObject = {

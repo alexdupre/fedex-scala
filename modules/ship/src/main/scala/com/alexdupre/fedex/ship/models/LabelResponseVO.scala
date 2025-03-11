@@ -54,10 +54,12 @@ object LabelResponseVO {
     case CERTIFICATE_OF_ORIGIN
     case MERGED_LABELS_ONLY
     case USMCA_COMMERCIAL_INVOICE_CERTIFICATION_OF_ORIGIN
+    case UNKNOWN_DEFAULT
   }
   object ContentType {
     given Encoder[ContentType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[ContentType] = Decoder.decodeString.emapTry(s => scala.util.Try(ContentType.valueOf(s)))
+    given Decoder[ContentType] =
+      Decoder.decodeString.map(s => scala.util.Try(ContentType.valueOf(s)).getOrElse(ContentType.UNKNOWN_DEFAULT))
   }
   given Encoder[LabelResponseVO] = new Encoder.AsObject[LabelResponseVO] {
     final def encodeObject(o: LabelResponseVO): JsonObject = {

@@ -32,10 +32,12 @@ object SmartPostInfoDetail {
     case CHANGE_SERVICE
     case FORWARDING_SERVICE
     case RETURN_SERVICE
+    case UNKNOWN_DEFAULT
   }
   object AncillaryEndorsement {
     given Encoder[AncillaryEndorsement] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[AncillaryEndorsement] = Decoder.decodeString.emapTry(s => scala.util.Try(AncillaryEndorsement.valueOf(s)))
+    given Decoder[AncillaryEndorsement] =
+      Decoder.decodeString.map(s => scala.util.Try(AncillaryEndorsement.valueOf(s)).getOrElse(AncillaryEndorsement.UNKNOWN_DEFAULT))
   }
 
   enum Indicia {
@@ -44,18 +46,21 @@ object SmartPostInfoDetail {
     case PARCEL_SELECT
     case PRESORTED_BOUND_PRINTED_MATTER
     case PRESORTED_STANDARD
+    case UNKNOWN_DEFAULT
   }
   object Indicia {
     given Encoder[Indicia] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Indicia] = Decoder.decodeString.emapTry(s => scala.util.Try(Indicia.valueOf(s)))
+    given Decoder[Indicia] = Decoder.decodeString.map(s => scala.util.Try(Indicia.valueOf(s)).getOrElse(Indicia.UNKNOWN_DEFAULT))
   }
 
   enum SpecialServices {
     case USPS_DELIVERY_CONFIRMATION
+    case UNKNOWN_DEFAULT
   }
   object SpecialServices {
     given Encoder[SpecialServices] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[SpecialServices] = Decoder.decodeString.emapTry(s => scala.util.Try(SpecialServices.valueOf(s)))
+    given Decoder[SpecialServices] =
+      Decoder.decodeString.map(s => scala.util.Try(SpecialServices.valueOf(s)).getOrElse(SpecialServices.UNKNOWN_DEFAULT))
   }
   given Encoder[SmartPostInfoDetail] = new Encoder.AsObject[SmartPostInfoDetail] {
     final def encodeObject(o: SmartPostInfoDetail): JsonObject = {

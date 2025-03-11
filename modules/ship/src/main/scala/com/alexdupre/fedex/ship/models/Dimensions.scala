@@ -30,10 +30,11 @@ object Dimensions {
   enum Units {
     case CM
     case IN
+    case UNKNOWN_DEFAULT
   }
   object Units {
     given Encoder[Units] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Units] = Decoder.decodeString.emapTry(s => scala.util.Try(Units.valueOf(s)))
+    given Decoder[Units] = Decoder.decodeString.map(s => scala.util.Try(Units.valueOf(s)).getOrElse(Units.UNKNOWN_DEFAULT))
   }
   given Encoder[Dimensions] = new Encoder.AsObject[Dimensions] {
     final def encodeObject(o: Dimensions): JsonObject = {

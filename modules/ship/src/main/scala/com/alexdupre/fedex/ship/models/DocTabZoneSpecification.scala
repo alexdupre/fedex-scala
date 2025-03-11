@@ -35,10 +35,12 @@ object DocTabZoneSpecification {
   enum Justification {
     case LEFT
     case RIGHT
+    case UNKNOWN_DEFAULT
   }
   object Justification {
     given Encoder[Justification] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Justification] = Decoder.decodeString.emapTry(s => scala.util.Try(Justification.valueOf(s)))
+    given Decoder[Justification] =
+      Decoder.decodeString.map(s => scala.util.Try(Justification.valueOf(s)).getOrElse(Justification.UNKNOWN_DEFAULT))
   }
   given Encoder[DocTabZoneSpecification] = new Encoder.AsObject[DocTabZoneSpecification] {
     final def encodeObject(o: DocTabZoneSpecification): JsonObject = {

@@ -22,10 +22,12 @@ object HazardousCommodityQuantityDetail {
   enum QuantityType {
     case GROSS
     case NET
+    case UNKNOWN_DEFAULT
   }
   object QuantityType {
     given Encoder[QuantityType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[QuantityType] = Decoder.decodeString.emapTry(s => scala.util.Try(QuantityType.valueOf(s)))
+    given Decoder[QuantityType] =
+      Decoder.decodeString.map(s => scala.util.Try(QuantityType.valueOf(s)).getOrElse(QuantityType.UNKNOWN_DEFAULT))
   }
   given Encoder[HazardousCommodityQuantityDetail] = new Encoder.AsObject[HazardousCommodityQuantityDetail] {
     final def encodeObject(o: HazardousCommodityQuantityDetail): JsonObject = {

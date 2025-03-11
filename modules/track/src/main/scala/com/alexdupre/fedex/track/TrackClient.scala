@@ -1,6 +1,6 @@
 package com.alexdupre.fedex.track
 
-import sttp.client4.Backend
+import sttp.client4.{Backend, Request}
 import sttp.monad.MonadError
 import sttp.monad.syntax.*
 
@@ -14,6 +14,10 @@ class TrackClient[F[_]](baseUrl: String = "https://apis-sandbox.fedex.com")(usin
   private val api = new TrackAPI(baseUrl)
 
   private given monad: MonadError[F] = backend.monad
+
+  private def send[T](request: Request[Either[TrackException, T]]): F[T] = {
+    backend.send(request).flatMap(_.body.fold(monad.error, monad.unit))
+  }
 
   /** Track Multiple Piece Shipment This endpoint returns tracking information for multiplee piece shipments, Group MPS, or an outbounddd
     * shipment which is linked to a return shipment.<br><i>Note: FedEx APIs do not support Cross-Origin Resource Sharing (CORS)
@@ -36,10 +40,7 @@ class TrackClient[F[_]](baseUrl: String = "https://apis-sandbox.fedex.com")(usin
       xCustomerTransactionId: Option[String] = None,
       xLocale: Option[String] = None
   ): F[models.TrkcResponseVOAssociated] = {
-    api
-      .trackMultiplePieceShipment(authorization, body, xCustomerTransactionId, xLocale)
-      .send(backend)
-      .flatMap(_.body.fold(monad.error, monad.unit))
+    send(api.trackMultiplePieceShipment(authorization, body, xCustomerTransactionId, xLocale))
   }
 
   /** Send Notification This endpoint helps you setup up, customize the tracking event notifications to be received for a
@@ -62,10 +63,7 @@ class TrackClient[F[_]](baseUrl: String = "https://apis-sandbox.fedex.com")(usin
       xCustomerTransactionId: Option[String] = None,
       xLocale: Option[String] = None
   ): F[models.TrkcResponseVONotifications] = {
-    api
-      .sendNotification(authorization, body, xCustomerTransactionId, xLocale)
-      .send(backend)
-      .flatMap(_.body.fold(monad.error, monad.unit))
+    send(api.sendNotification(authorization, body, xCustomerTransactionId, xLocale))
   }
 
   /** Track by References This endpoint returns tracking information based on alternate references other than Tracking Number such as
@@ -90,10 +88,7 @@ class TrackClient[F[_]](baseUrl: String = "https://apis-sandbox.fedex.com")(usin
       xCustomerTransactionId: Option[String] = None,
       xLocale: Option[String] = None
   ): F[models.TrkcResponseVOReferenceNumber] = {
-    api
-      .trackByReferences(authorization, body, xCustomerTransactionId, xLocale)
-      .send(backend)
-      .flatMap(_.body.fold(monad.error, monad.unit))
+    send(api.trackByReferences(authorization, body, xCustomerTransactionId, xLocale))
   }
 
   /** Track by Tracking Control Number Use this endpoint to return tracking information based on a Tracking Control Number.<br><i>Note:
@@ -116,10 +111,7 @@ class TrackClient[F[_]](baseUrl: String = "https://apis-sandbox.fedex.com")(usin
       xCustomerTransactionId: Option[String] = None,
       xLocale: Option[String] = None
   ): F[models.TrkcResponseVOTCN] = {
-    api
-      .trackByTrackingControlNumber(authorization, body, xCustomerTransactionId, xLocale)
-      .send(backend)
-      .flatMap(_.body.fold(monad.error, monad.unit))
+    send(api.trackByTrackingControlNumber(authorization, body, xCustomerTransactionId, xLocale))
   }
 
   /** Track Document This endpoint helps you to request a letter that includes the recipient's signature as a proof of delivery.<br><i>Note:
@@ -140,10 +132,7 @@ class TrackClient[F[_]](baseUrl: String = "https://apis-sandbox.fedex.com")(usin
       xCustomerTransactionId: Option[String] = None,
       xLocale: Option[String] = None
   ): F[models.TrkcResponseVOSPOD] = {
-    api
-      .trackDocument(authorization, body, xCustomerTransactionId, xLocale)
-      .send(backend)
-      .flatMap(_.body.fold(monad.error, monad.unit))
+    send(api.trackDocument(authorization, body, xCustomerTransactionId, xLocale))
   }
 
   /** Track by Tracking Number This endpoint provides customers package tracking information based on a tracking number for various shipping
@@ -166,9 +155,6 @@ class TrackClient[F[_]](baseUrl: String = "https://apis-sandbox.fedex.com")(usin
       xCustomerTransactionId: Option[String] = None,
       xLocale: Option[String] = None
   ): F[models.TrkcResponseVOTrackingNumber] = {
-    api
-      .trackByTrackingNumber(authorization, body, xCustomerTransactionId, xLocale)
-      .send(backend)
-      .flatMap(_.body.fold(monad.error, monad.unit))
+    send(api.trackByTrackingNumber(authorization, body, xCustomerTransactionId, xLocale))
   }
 }

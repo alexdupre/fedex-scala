@@ -23,10 +23,11 @@ object ShippingDocumentEmailDetail {
   enum Grouping {
     case BY_RECIPIENT
     case NONE
+    case UNKNOWN_DEFAULT
   }
   object Grouping {
     given Encoder[Grouping] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Grouping] = Decoder.decodeString.emapTry(s => scala.util.Try(Grouping.valueOf(s)))
+    given Decoder[Grouping] = Decoder.decodeString.map(s => scala.util.Try(Grouping.valueOf(s)).getOrElse(Grouping.UNKNOWN_DEFAULT))
   }
   given Encoder[ShippingDocumentEmailDetail] = new Encoder.AsObject[ShippingDocumentEmailDetail] {
     final def encodeObject(o: ShippingDocumentEmailDetail): JsonObject = {

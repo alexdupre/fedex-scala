@@ -25,10 +25,11 @@ object EmailRecipient {
   enum Role {
     case SHIPMENT_COMPLETOR
     case SHIPMENT_INITIATOR
+    case UNKNOWN_DEFAULT
   }
   object Role {
     given Encoder[Role] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Role] = Decoder.decodeString.emapTry(s => scala.util.Try(Role.valueOf(s)))
+    given Decoder[Role] = Decoder.decodeString.map(s => scala.util.Try(Role.valueOf(s)).getOrElse(Role.UNKNOWN_DEFAULT))
   }
   given Encoder[EmailRecipient] = new Encoder.AsObject[EmailRecipient] {
     final def encodeObject(o: EmailRecipient): JsonObject = {

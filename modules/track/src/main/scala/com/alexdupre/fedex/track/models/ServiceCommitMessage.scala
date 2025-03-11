@@ -33,10 +33,11 @@ object ServiceCommitMessage {
     case SUBSEQUENT_DELIVERY_ATTEMPTED
     case USPS_DELIVERED
     case `USPS_DELIVERING"`
+    case UNKNOWN_DEFAULT
   }
   object Type {
     given Encoder[Type] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Type] = Decoder.decodeString.emapTry(s => scala.util.Try(Type.valueOf(s)))
+    given Decoder[Type] = Decoder.decodeString.map(s => scala.util.Try(Type.valueOf(s)).getOrElse(Type.UNKNOWN_DEFAULT))
   }
   given Encoder[ServiceCommitMessage] = new Encoder.AsObject[ServiceCommitMessage] {
     final def encodeObject(o: ServiceCommitMessage): JsonObject = {

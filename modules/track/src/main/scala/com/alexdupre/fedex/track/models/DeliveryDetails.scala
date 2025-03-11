@@ -61,10 +61,12 @@ object DeliveryDetails {
     case RENTAL_OFFICE
     case APARTMENT_OFFICE
     case OTHER
+    case UNKNOWN_DEFAULT
   }
   object LocationType {
     given Encoder[LocationType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[LocationType] = Decoder.decodeString.emapTry(s => scala.util.Try(LocationType.valueOf(s)))
+    given Decoder[LocationType] =
+      Decoder.decodeString.map(s => scala.util.Try(LocationType.valueOf(s)).getOrElse(LocationType.UNKNOWN_DEFAULT))
   }
   given Encoder[DeliveryDetails] = new Encoder.AsObject[DeliveryDetails] {
     final def encodeObject(o: DeliveryDetails): JsonObject = {

@@ -31,19 +31,21 @@ case class ReturnShippingDocumentFormat(
 object ReturnShippingDocumentFormat {
   enum StockType {
     case PAPER_LETTER
+    case UNKNOWN_DEFAULT
   }
   object StockType {
     given Encoder[StockType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[StockType] = Decoder.decodeString.emapTry(s => scala.util.Try(StockType.valueOf(s)))
+    given Decoder[StockType] = Decoder.decodeString.map(s => scala.util.Try(StockType.valueOf(s)).getOrElse(StockType.UNKNOWN_DEFAULT))
   }
 
   enum DocType {
     case PNG
     case PDF
+    case UNKNOWN_DEFAULT
   }
   object DocType {
     given Encoder[DocType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[DocType] = Decoder.decodeString.emapTry(s => scala.util.Try(DocType.valueOf(s)))
+    given Decoder[DocType] = Decoder.decodeString.map(s => scala.util.Try(DocType.valueOf(s)).getOrElse(DocType.UNKNOWN_DEFAULT))
   }
   given Encoder[ReturnShippingDocumentFormat] = new Encoder.AsObject[ReturnShippingDocumentFormat] {
     final def encodeObject(o: ReturnShippingDocumentFormat): JsonObject = {

@@ -20,6 +20,15 @@ class ShipAPI(baseUrl: String = "https://apis-sandbox.fedex.com") {
     }
   }
 
+  private def mapAPIError[T: Decoder](description: String, ex: ResponseException.UnexpectedStatusCode[_]) = {
+    parse(ex.body.toString)
+      .flatMap(_.as[T])
+      .fold(
+        e => ShipDeserializationException("Deserialization Error: " + e.getMessage, ex.body.toString, ex),
+        o => ShipAPIException(description, o, ex)
+      )
+  }
+
   /** Create Shipment This endpoint helps you to create shipment requests thereby validating all the shipping input information and either
     * generates the labels (if the responses is synchronous) or a job ID if transaction is processed using asynchronous method.<br><i>Note:
     * FedEx APIs do not support Cross-Origin Resource Sharing (CORS) mechanism.</i>
@@ -40,7 +49,7 @@ class ShipAPI(baseUrl: String = "https://apis-sandbox.fedex.com") {
       body: models.FullSchemaShip,
       xCustomerTransactionId: Option[String] = None,
       xLocale: Option[String] = None
-  ): Request[Either[ShipAPIException, models.SHPCResponseVOShipShipment]] = {
+  ): Request[Either[ShipException, models.SHPCResponseVOShipShipment]] = {
     val __body = body
     val __headers = Map(
       "x-customer-transaction-id" -> xCustomerTransactionId,
@@ -52,30 +61,20 @@ class ShipAPI(baseUrl: String = "https://apis-sandbox.fedex.com") {
       .headers(cleanAndStringify(__headers))
       .body(asJson(__body))
       .response(asJson[models.SHPCResponseVOShipShipment].mapLeft {
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 400 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO])
-            .fold(e => throw e, o => ShipAPIException("Bad Request", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 401 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO401])
-            .fold(e => throw e, o => ShipAPIException("Unauthorized", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 403 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO403])
-            .fold(e => throw e, o => ShipAPIException("Forbidden", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 404 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO404])
-            .fold(e => throw e, o => ShipAPIException("Not Found", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 500 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO500])
-            .fold(e => throw e, o => ShipAPIException("Failure", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 503 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO503])
-            .fold(e => throw e, o => ShipAPIException("Service Unavailable", o, ex))
+        case ex @ ResponseException.DeserializationException(body, cause, response) =>
+          ShipDeserializationException("Deserialization Error: " + ex.getMessage, body, ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 400 =>
+          mapAPIError[models.ErrorResponseVO]("Bad Request", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 401 =>
+          mapAPIError[models.ErrorResponseVO401]("Unauthorized", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 403 =>
+          mapAPIError[models.ErrorResponseVO403]("Forbidden", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 404 =>
+          mapAPIError[models.ErrorResponseVO404]("Not Found", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 500 =>
+          mapAPIError[models.ErrorResponseVO500]("Failure", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 503 =>
+          mapAPIError[models.ErrorResponseVO503]("Service Unavailable", ex)
         case ex: Throwable => throw ex
         case unexpected    => sys.error("Unexpected error: " + unexpected)
       })
@@ -101,7 +100,7 @@ class ShipAPI(baseUrl: String = "https://apis-sandbox.fedex.com") {
       body: models.FullSchemaCancelShipment,
       xCustomerTransactionId: Option[String] = None,
       xLocale: Option[String] = None
-  ): Request[Either[ShipAPIException, models.SHPCResponseVOCancelShipment]] = {
+  ): Request[Either[ShipException, models.SHPCResponseVOCancelShipment]] = {
     val __body = body
     val __headers = Map(
       "x-customer-transaction-id" -> xCustomerTransactionId,
@@ -113,30 +112,20 @@ class ShipAPI(baseUrl: String = "https://apis-sandbox.fedex.com") {
       .headers(cleanAndStringify(__headers))
       .body(asJson(__body))
       .response(asJson[models.SHPCResponseVOCancelShipment].mapLeft {
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 400 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO2])
-            .fold(e => throw e, o => ShipAPIException("Bad Request", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 401 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO401_2])
-            .fold(e => throw e, o => ShipAPIException("Unauthorized", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 403 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO403_2])
-            .fold(e => throw e, o => ShipAPIException("Forbidden", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 404 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO404_2])
-            .fold(e => throw e, o => ShipAPIException("Not Found", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 500 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO500_2])
-            .fold(e => throw e, o => ShipAPIException("Failure", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 503 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO503_2])
-            .fold(e => throw e, o => ShipAPIException("Service Unavailable", o, ex))
+        case ex @ ResponseException.DeserializationException(body, cause, response) =>
+          ShipDeserializationException("Deserialization Error: " + ex.getMessage, body, ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 400 =>
+          mapAPIError[models.ErrorResponseVO2]("Bad Request", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 401 =>
+          mapAPIError[models.ErrorResponseVO401_2]("Unauthorized", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 403 =>
+          mapAPIError[models.ErrorResponseVO403_2]("Forbidden", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 404 =>
+          mapAPIError[models.ErrorResponseVO404_2]("Not Found", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 500 =>
+          mapAPIError[models.ErrorResponseVO500_2]("Failure", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 503 =>
+          mapAPIError[models.ErrorResponseVO503_2]("Service Unavailable", ex)
         case ex: Throwable => throw ex
         case unexpected    => sys.error("Unexpected error: " + unexpected)
       })
@@ -158,7 +147,7 @@ class ShipAPI(baseUrl: String = "https://apis-sandbox.fedex.com") {
       body: models.FullSchemaGetConfirmedShipmentAsyncResults,
       xCustomerTransactionId: Option[String] = None,
       xLocale: Option[String] = None
-  ): Request[Either[ShipAPIException, models.SHPCResponseVOGetOpenShipmentResults]] = {
+  ): Request[Either[ShipException, models.SHPCResponseVOGetOpenShipmentResults]] = {
     val __body = body
     val __headers = Map(
       "x-customer-transaction-id" -> xCustomerTransactionId,
@@ -170,30 +159,20 @@ class ShipAPI(baseUrl: String = "https://apis-sandbox.fedex.com") {
       .headers(cleanAndStringify(__headers))
       .body(asJson(__body))
       .response(asJson[models.SHPCResponseVOGetOpenShipmentResults].mapLeft {
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 400 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO2])
-            .fold(e => throw e, o => ShipAPIException("Bad Request", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 401 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO401_2])
-            .fold(e => throw e, o => ShipAPIException("Unauthorized", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 403 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO403_2])
-            .fold(e => throw e, o => ShipAPIException("Forbidden", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 404 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO404_2])
-            .fold(e => throw e, o => ShipAPIException("Not Found", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 500 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO500_2])
-            .fold(e => throw e, o => ShipAPIException("Failure", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 503 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO503_2])
-            .fold(e => throw e, o => ShipAPIException("Service Unavailable", o, ex))
+        case ex @ ResponseException.DeserializationException(body, cause, response) =>
+          ShipDeserializationException("Deserialization Error: " + ex.getMessage, body, ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 400 =>
+          mapAPIError[models.ErrorResponseVO2]("Bad Request", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 401 =>
+          mapAPIError[models.ErrorResponseVO401_2]("Unauthorized", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 403 =>
+          mapAPIError[models.ErrorResponseVO403_2]("Forbidden", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 404 =>
+          mapAPIError[models.ErrorResponseVO404_2]("Not Found", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 500 =>
+          mapAPIError[models.ErrorResponseVO500_2]("Failure", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 503 =>
+          mapAPIError[models.ErrorResponseVO503_2]("Service Unavailable", ex)
         case ex: Throwable => throw ex
         case unexpected    => sys.error("Unexpected error: " + unexpected)
       })
@@ -223,7 +202,7 @@ class ShipAPI(baseUrl: String = "https://apis-sandbox.fedex.com") {
       body: models.FullSchemaVerifyShipment,
       xCustomerTransactionId: Option[String] = None,
       xLocale: Option[String] = None
-  ): Request[Either[ShipAPIException, models.SHPCResponseVOValidate]] = {
+  ): Request[Either[ShipException, models.SHPCResponseVOValidate]] = {
     val __body = body
     val __headers = Map(
       "x-customer-transaction-id" -> xCustomerTransactionId,
@@ -235,25 +214,18 @@ class ShipAPI(baseUrl: String = "https://apis-sandbox.fedex.com") {
       .headers(cleanAndStringify(__headers))
       .body(asJson(__body))
       .response(asJson[models.SHPCResponseVOValidate].mapLeft {
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 400 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO2])
-            .fold(e => throw e, o => ShipAPIException("Bad Request", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 401 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO2])
-            .fold(e => throw e, o => ShipAPIException("Unauthorized", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 403 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO2])
-            .fold(e => throw e, o => ShipAPIException("Forbidden", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 404 =>
-          parse(body.toString)
-            .fold(e => throw e, o => ShipAPIException("Not Found", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 500 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO2])
-            .fold(e => throw e, o => ShipAPIException("Failure", o, ex))
+        case ex @ ResponseException.DeserializationException(body, cause, response) =>
+          ShipDeserializationException("Deserialization Error: " + ex.getMessage, body, ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 400 =>
+          mapAPIError[models.ErrorResponseVO2]("Bad Request", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 401 =>
+          mapAPIError[models.ErrorResponseVO2]("Unauthorized", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 403 =>
+          mapAPIError[models.ErrorResponseVO2]("Forbidden", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 404 =>
+          ShipAPIException("Not Found", ex.body, ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 500 =>
+          mapAPIError[models.ErrorResponseVO2]("Failure", ex)
         case ex: Throwable => throw ex
         case unexpected    => sys.error("Unexpected error: " + unexpected)
       })
@@ -277,7 +249,7 @@ class ShipAPI(baseUrl: String = "https://apis-sandbox.fedex.com") {
       body: models.FullSchemaCreateTag,
       xCustomerTransactionId: Option[String] = None,
       xLocale: Option[String] = None
-  ): Request[Either[ShipAPIException, models.SHPCResponseVOCreateTag]] = {
+  ): Request[Either[ShipException, models.SHPCResponseVOCreateTag]] = {
     val __body = body
     val __headers = Map(
       "x-customer-transaction-id" -> xCustomerTransactionId,
@@ -289,30 +261,20 @@ class ShipAPI(baseUrl: String = "https://apis-sandbox.fedex.com") {
       .headers(cleanAndStringify(__headers))
       .body(asJson(__body))
       .response(asJson[models.SHPCResponseVOCreateTag].mapLeft {
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 400 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO])
-            .fold(e => throw e, o => ShipAPIException("Bad Request", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 401 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO401])
-            .fold(e => throw e, o => ShipAPIException("Unauthorized", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 403 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO403])
-            .fold(e => throw e, o => ShipAPIException("Forbidden", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 404 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO404])
-            .fold(e => throw e, o => ShipAPIException("Not Found", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 500 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO500])
-            .fold(e => throw e, o => ShipAPIException("Failure", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 503 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO503])
-            .fold(e => throw e, o => ShipAPIException("Service Unavailable", o, ex))
+        case ex @ ResponseException.DeserializationException(body, cause, response) =>
+          ShipDeserializationException("Deserialization Error: " + ex.getMessage, body, ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 400 =>
+          mapAPIError[models.ErrorResponseVO]("Bad Request", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 401 =>
+          mapAPIError[models.ErrorResponseVO401]("Unauthorized", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 403 =>
+          mapAPIError[models.ErrorResponseVO403]("Forbidden", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 404 =>
+          mapAPIError[models.ErrorResponseVO404]("Not Found", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 500 =>
+          mapAPIError[models.ErrorResponseVO500]("Failure", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 503 =>
+          mapAPIError[models.ErrorResponseVO503]("Service Unavailable", ex)
         case ex: Throwable => throw ex
         case unexpected    => sys.error("Unexpected error: " + unexpected)
       })
@@ -339,7 +301,7 @@ class ShipAPI(baseUrl: String = "https://apis-sandbox.fedex.com") {
       body: models.FullSchemaCancelTag,
       xCustomerTransactionId: Option[String] = None,
       xLocale: Option[String] = None
-  ): Request[Either[ShipAPIException, models.SHPCResponseVO]] = {
+  ): Request[Either[ShipException, models.SHPCResponseVO]] = {
     val __body = body
     val __headers = Map(
       "x-customer-transaction-id" -> xCustomerTransactionId,
@@ -351,30 +313,20 @@ class ShipAPI(baseUrl: String = "https://apis-sandbox.fedex.com") {
       .headers(cleanAndStringify(__headers))
       .body(asJson(__body))
       .response(asJson[models.SHPCResponseVO].mapLeft {
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 400 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO2])
-            .fold(e => throw e, o => ShipAPIException("Bad Request", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 401 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO401_2])
-            .fold(e => throw e, o => ShipAPIException("Unauthorized", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 403 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO403_2])
-            .fold(e => throw e, o => ShipAPIException("Forbidden", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 404 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO404_2])
-            .fold(e => throw e, o => ShipAPIException("Not Found", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 500 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO500_2])
-            .fold(e => throw e, o => ShipAPIException("Failure", o, ex))
-        case ex @ ResponseException.UnexpectedStatusCode(body, response) if response.code.code == 503 =>
-          parse(body.toString)
-            .flatMap(_.as[models.ErrorResponseVO503_2])
-            .fold(e => throw e, o => ShipAPIException("Service Unavailable", o, ex))
+        case ex @ ResponseException.DeserializationException(body, cause, response) =>
+          ShipDeserializationException("Deserialization Error: " + ex.getMessage, body, ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 400 =>
+          mapAPIError[models.ErrorResponseVO2]("Bad Request", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 401 =>
+          mapAPIError[models.ErrorResponseVO401_2]("Unauthorized", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 403 =>
+          mapAPIError[models.ErrorResponseVO403_2]("Forbidden", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 404 =>
+          mapAPIError[models.ErrorResponseVO404_2]("Not Found", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 500 =>
+          mapAPIError[models.ErrorResponseVO500_2]("Failure", ex)
+        case ex @ ResponseException.UnexpectedStatusCode(_, response) if response.code.code == 503 =>
+          mapAPIError[models.ErrorResponseVO503_2]("Service Unavailable", ex)
         case ex: Throwable => throw ex
         case unexpected    => sys.error("Unexpected error: " + unexpected)
       })

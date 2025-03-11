@@ -28,10 +28,11 @@ object AdditionalLabelsDetail {
     case RECIPIENT
     case SECOND_ADDRESS
     case SHIPPER
+    case UNKNOWN_DEFAULT
   }
   object Type {
     given Encoder[Type] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Type] = Decoder.decodeString.emapTry(s => scala.util.Try(Type.valueOf(s)))
+    given Decoder[Type] = Decoder.decodeString.map(s => scala.util.Try(Type.valueOf(s)).getOrElse(Type.UNKNOWN_DEFAULT))
   }
   given Encoder[AdditionalLabelsDetail] = new Encoder.AsObject[AdditionalLabelsDetail] {
     final def encodeObject(o: AdditionalLabelsDetail): JsonObject = {

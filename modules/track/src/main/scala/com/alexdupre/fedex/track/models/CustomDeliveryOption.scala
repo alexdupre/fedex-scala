@@ -27,10 +27,11 @@ object CustomDeliveryOption {
     case EVENING
     case REDIRECT_TO_HOLD_AT_LOCATION
     case ELECTRONIC_SIGNATURE_RELEASE
+    case UNKNOWN_DEFAULT
   }
   object Type {
     given Encoder[Type] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Type] = Decoder.decodeString.emapTry(s => scala.util.Try(Type.valueOf(s)))
+    given Decoder[Type] = Decoder.decodeString.map(s => scala.util.Try(Type.valueOf(s)).getOrElse(Type.UNKNOWN_DEFAULT))
   }
   given Encoder[CustomDeliveryOption] = new Encoder.AsObject[CustomDeliveryOption] {
     final def encodeObject(o: CustomDeliveryOption): JsonObject = {

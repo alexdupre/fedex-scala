@@ -24,10 +24,12 @@ object DestinationControlDetail {
   enum StatementTypes {
     case DEPARTMENT_OF_COMMERCE
     case DEPARTMENT_OF_STATE
+    case UNKNOWN_DEFAULT
   }
   object StatementTypes {
     given Encoder[StatementTypes] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[StatementTypes] = Decoder.decodeString.emapTry(s => scala.util.Try(StatementTypes.valueOf(s)))
+    given Decoder[StatementTypes] =
+      Decoder.decodeString.map(s => scala.util.Try(StatementTypes.valueOf(s)).getOrElse(StatementTypes.UNKNOWN_DEFAULT))
   }
   given Encoder[DestinationControlDetail] = new Encoder.AsObject[DestinationControlDetail] {
     final def encodeObject(o: DestinationControlDetail): JsonObject = {

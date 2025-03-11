@@ -22,27 +22,33 @@ object BatteryDetail {
   enum BatteryPackingType {
     case CONTAINED_IN_EQUIPMENT
     case PACKED_WITH_EQUIPMENT
+    case UNKNOWN_DEFAULT
   }
   object BatteryPackingType {
     given Encoder[BatteryPackingType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[BatteryPackingType] = Decoder.decodeString.emapTry(s => scala.util.Try(BatteryPackingType.valueOf(s)))
+    given Decoder[BatteryPackingType] =
+      Decoder.decodeString.map(s => scala.util.Try(BatteryPackingType.valueOf(s)).getOrElse(BatteryPackingType.UNKNOWN_DEFAULT))
   }
 
   enum BatteryRegulatoryType {
     case IATA_SECTION_II
+    case UNKNOWN_DEFAULT
   }
   object BatteryRegulatoryType {
     given Encoder[BatteryRegulatoryType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[BatteryRegulatoryType] = Decoder.decodeString.emapTry(s => scala.util.Try(BatteryRegulatoryType.valueOf(s)))
+    given Decoder[BatteryRegulatoryType] =
+      Decoder.decodeString.map(s => scala.util.Try(BatteryRegulatoryType.valueOf(s)).getOrElse(BatteryRegulatoryType.UNKNOWN_DEFAULT))
   }
 
   enum BatteryMaterialType {
     case LITHIUM_METAL
     case LITHIUM_ION
+    case UNKNOWN_DEFAULT
   }
   object BatteryMaterialType {
     given Encoder[BatteryMaterialType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[BatteryMaterialType] = Decoder.decodeString.emapTry(s => scala.util.Try(BatteryMaterialType.valueOf(s)))
+    given Decoder[BatteryMaterialType] =
+      Decoder.decodeString.map(s => scala.util.Try(BatteryMaterialType.valueOf(s)).getOrElse(BatteryMaterialType.UNKNOWN_DEFAULT))
   }
   given Encoder[BatteryDetail] = new Encoder.AsObject[BatteryDetail] {
     final def encodeObject(o: BatteryDetail): JsonObject = {

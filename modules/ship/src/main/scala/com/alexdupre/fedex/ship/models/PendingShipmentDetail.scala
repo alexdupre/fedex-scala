@@ -26,10 +26,12 @@ case class PendingShipmentDetail(
 object PendingShipmentDetail {
   enum PendingShipmentType {
     case EMAIL
+    case UNKNOWN_DEFAULT
   }
   object PendingShipmentType {
     given Encoder[PendingShipmentType] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[PendingShipmentType] = Decoder.decodeString.emapTry(s => scala.util.Try(PendingShipmentType.valueOf(s)))
+    given Decoder[PendingShipmentType] =
+      Decoder.decodeString.map(s => scala.util.Try(PendingShipmentType.valueOf(s)).getOrElse(PendingShipmentType.UNKNOWN_DEFAULT))
   }
   given Encoder[PendingShipmentDetail] = new Encoder.AsObject[PendingShipmentDetail] {
     final def encodeObject(o: PendingShipmentDetail): JsonObject = {

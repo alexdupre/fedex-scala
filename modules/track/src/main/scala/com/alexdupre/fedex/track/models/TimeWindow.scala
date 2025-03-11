@@ -31,10 +31,11 @@ object TimeWindow {
     case ESTIMATED_RETURN_TO_STATION
     case SHIP
     case SHIPMENT_DATA_RECEIVED
+    case UNKNOWN_DEFAULT
   }
   object Type {
     given Encoder[Type] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Type] = Decoder.decodeString.emapTry(s => scala.util.Try(Type.valueOf(s)))
+    given Decoder[Type] = Decoder.decodeString.map(s => scala.util.Try(Type.valueOf(s)).getOrElse(Type.UNKNOWN_DEFAULT))
   }
   given Encoder[TimeWindow] = new Encoder.AsObject[TimeWindow] {
     final def encodeObject(o: TimeWindow): JsonObject = {

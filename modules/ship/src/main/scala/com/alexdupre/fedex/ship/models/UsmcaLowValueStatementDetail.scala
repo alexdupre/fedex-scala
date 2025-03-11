@@ -19,10 +19,12 @@ object UsmcaLowValueStatementDetail {
   enum CustomsRole {
     case EXPORTER
     case IMPORTER
+    case UNKNOWN_DEFAULT
   }
   object CustomsRole {
     given Encoder[CustomsRole] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[CustomsRole] = Decoder.decodeString.emapTry(s => scala.util.Try(CustomsRole.valueOf(s)))
+    given Decoder[CustomsRole] =
+      Decoder.decodeString.map(s => scala.util.Try(CustomsRole.valueOf(s)).getOrElse(CustomsRole.UNKNOWN_DEFAULT))
   }
   given Encoder[UsmcaLowValueStatementDetail] = new Encoder.AsObject[UsmcaLowValueStatementDetail] {
     final def encodeObject(o: UsmcaLowValueStatementDetail): JsonObject = {

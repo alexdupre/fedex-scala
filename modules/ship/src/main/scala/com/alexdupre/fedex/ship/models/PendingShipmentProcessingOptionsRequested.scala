@@ -16,10 +16,11 @@ case class PendingShipmentProcessingOptionsRequested(
 object PendingShipmentProcessingOptionsRequested {
   enum Options {
     case ALLOW_MODIFICATIONS
+    case UNKNOWN_DEFAULT
   }
   object Options {
     given Encoder[Options] = Encoder.encodeString.contramap(_.toString)
-    given Decoder[Options] = Decoder.decodeString.emapTry(s => scala.util.Try(Options.valueOf(s)))
+    given Decoder[Options] = Decoder.decodeString.map(s => scala.util.Try(Options.valueOf(s)).getOrElse(Options.UNKNOWN_DEFAULT))
   }
   given Encoder[PendingShipmentProcessingOptionsRequested] = new Encoder.AsObject[PendingShipmentProcessingOptionsRequested] {
     final def encodeObject(o: PendingShipmentProcessingOptionsRequested): JsonObject = {
